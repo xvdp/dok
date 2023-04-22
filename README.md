@@ -104,6 +104,8 @@ Example file how to add local projects
 
 1. choose a pip installbable project eg. `cd git <projects_parent> clone https://github.com/NVlabs/nvdiffrast `
 2. `./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -i nvdiffrast -r <projects_parent>`
+or 
+3. `./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -g NVlabs/nvdiffrast -r <projects_parent>`
 
 generates -> `xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch_diffrast_example:latest`
 
