@@ -26,10 +26,10 @@ RUN conda config --add channels pytorch && conda config --set channel_priority s
 # with later versions of pytorch and packages this could be removed, or an environment added
 RUN mamba install -y python=3.9
 
-RUN mamba install -y pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia \
-&& mamba install -y ninja plotly h5py jupyter tqdm scikit-learn lmdb einops matplotlib pybind11 \
+RUN mamba install -y pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+RUN mamba install -y plotly h5py jupyter tqdm scikit-learn lmdb einops matplotlib pybind11 \
 openexr colour-science glfw pyopengl imageio imageio-ffmpeg \
-&& pip install --upgrade pip && pip install mitsuba mediapipe more_itertools pyexr
+&& pip install --upgrade pip && pip install mitsuba mediapipe more_itertools pyexr ninja
 
 # from https://github.com/NVlabs/nvdiffrast/blob/main/docker/Dockerfile
 # for GLEW
@@ -38,8 +38,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,graphics
 # Default pyopengl to EGL for good headless rendering support
 ENV PYOPENGL_PLATFORM egl
 
-# TODO ninja from mamba fails!? install as pip, next time a full rebuild is needed, remove from mamba, split pytorch from the other installs
-RUN pip install ninja
-# if run with a different exposed port than which it is built edit the alias in .bashrc
+# if run with a different exposed port than built into ssh edit the alias in .bashrc
+# start jupyter on docker - port will be correct, but ip 0.0.0.0 will need to be edited in browser
 RUN echo "alias jupy='jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=${PORT}'" >> ~/.bashrc
 CMD ["/bin/bash"]
