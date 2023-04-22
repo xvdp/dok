@@ -1,4 +1,3 @@
-
 #!/bin/bash
 # @xvdp
 # example script building all images

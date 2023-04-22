@@ -14,8 +14,9 @@
 # Args
 #   -b baseimage  # required: baseimage with OS, Graphic drivers, authorized_keys, etc.
 #   -r root       # required: this project defaults to
-#   -i projects   # array of folders under root, passed as -i "${ar[*]}
+#   -i projects   # array of folders under root, passed as ar=(project progect1) -i "${ar[*]}"
 #       must match list of projects in Dockerfile
+#   -g gits       # array of gits, if not found as project, clone  ar=(NVlabs/nvdiffrast gituser/project2) -i "${ar[*]}"
 
 # Optional Args
 #   -n            # image name -default: basename
@@ -23,10 +24,10 @@
 #   -t            # tag        -default: latest
 
 
-# personal defaults to overwrite or pass with -r and -i respectively
+# personal defaults to overwrite or pass with -r ROOT -i "${localprojects[*]}" -g "${githubprojects[*]}" 
 ROOT_LOCAL="/home/z/work/gits"
-PROJECTS_LOCAL=(nvdiffrast)
-
+PROJECTS_LOCAL=()
+GITS_LOCAL=(NVlabs/nvdiffrast)
 
 
 if [ $# -eq 0 ]
@@ -35,13 +36,14 @@ if [ $# -eq 0 ]
     exit
 fi
 
-while getopts b:n:m:t:r:i: option; do case ${option} in
+while getopts b:n:m:t:r:i:g: option; do case ${option} in
 b) BASEIMAGE=${OPTARG};;
 n) NAME=${OPTARG};;       # build name, default: 
 m) MAINTAINER=${OPTARG};; # build maintainer, default : xvdp
 t) TAG=${OPTARG};;        # build tag, default : latest
 r) ROOT=${OPTARG};;       # project root for local installs
 i) PROJECTS=(${OPTARG});; # array of pip installabale projects eg. ar=(nvdiffrast mypip) -i "${ar[*]}
+g) GITS=(${OPTARG});; # array of pip installabale projects eg. ar=(nvdiffrast mypip) -i "${ar[*]}
 esac; done
 
 if [ -z $BASEIMAGE ]; then
@@ -53,12 +55,31 @@ fi
 [ -z $MAINTAINER ] && MAINTAINER="xvdp";
 [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
-[ -z $PROJECTS ] && PROJECTS=$PROJECTS_LOCAL;
+[ -z $PROJECTS ] && PROJECTS=("${PROJECTS_LOCAL[@]}");
+[ -z $GITS ] && GITS=("${GITS_LOCAL[@]}");
+
 
 # local projects installation # must match Dockerfile ADD instructions
+# clone gits to ROOT and include as project
 # copy named projects from installation ROOT, install, then clean up
+cd ${ROOT}
+for proj in "${GITS[@]}"; do
+  if [ ! -d "${ROOT}/`basename ${proj}`" ];then
+      echo "   cloning:  https://github.com/${proj}"
+      git clone "https://github.com/${proj}"
+  else
+    echo "   using local:   ${ROOT}/`basename ${proj}`"
+  fi
+  PROJECTS+=(`basename ${proj}`)
+done
+cd -
+
+
 for proj in "${PROJECTS[@]}"; do
-  if [ ! -d "${ROOT}/${proj}" ];then echo "${ROOT}/${proj} not found, cannot build ..."; fi
+  if [ ! -d "${ROOT}/${proj}" ];then
+    echo "BUILD ERROR: ${ROOT}/${proj} not found, cannot build ...";
+    exit
+  fi
 done
 for proj in "${PROJECTS[@]}"; do cp -rf "${ROOT}/${proj}" . ; done
 
