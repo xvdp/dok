@@ -109,8 +109,10 @@ generates -> `xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch_diffrast_exampl
 
 requires
 * `-b baseimage   `  e.g. xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch
-* `-i "${ar[*]}" or <myproject>` e.g. `ar=(nvdiffrast, <myproject>)` every project requires an `ADD <myproject>` to the Dockerfile
 * `-r <projects_parent>` as written `build.sh` requires every project to be inside same folder.
+* `-i "${ar[*]}" or <myproject>` e.g. `ar=(nvdiffrast, <myproject>)` every project requires an `ADD <myproject>` to the Dockerfile
+* `-g "${ar[*]}" or <gitproject>` e.g. `ar=(NVlabs/nvdiffrast, <gituser>/<gitproject>)` every project requires an `ADD <gitproject>` to the Dockerfile
+
 ---
 ## To run from clients
 
