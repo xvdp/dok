@@ -1,5 +1,5 @@
 # dok
-### nested Dockerfile for remote multiuser development
+## nested Dockerfile for remote multiuser development
 ### images for torch develoment with cuda
 
 Docker images created here are meant to be used as a stack avoiding env passing in docker multistage. A baseimage can be passed into every new image.
@@ -129,7 +129,6 @@ docker context ls
 cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04  -r <mydir_with_authorized_keys>
 cd ../mamba && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh
 cd ../torch && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
-cd ../face && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch
 # having git cloned a pip installable project eg, https://github.com/NVlabs/nvdiffrast t0 a <myprojects_dir>
 cd ../diffrast_example && ./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -i nvdiffrast -r <myprojects_dir>
 ```
