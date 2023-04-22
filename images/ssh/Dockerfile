@@ -7,7 +7,7 @@ ARG port=32778
 MAINTAINER $maintainer
 
 # TODO: possible confusion, clarify sshd_config vs ufw 
-# replace Port 22 -> 32888 in shd_config : to run with network=host
+# replace Port 22 -> 32778 in shd_config : to run with network=host
 RUN apt-get update && apt-get install -y openssh-server
 RUN sed -i "s/#Port 22/Port ${port}/g" /etc/ssh/sshd_config
 RUN mkdir /var/run/sshd
@@ -51,7 +51,7 @@ ADD --chown=appuser:appuser bashrc /home/appuser/.bashrc
 ADD --chown=appuser1:appuser1 bashrc /home/appuser1/.bashrc
 ADD --chown=appuser2:appuser2 bashrc /home/appuser2/.bashrc
 
-# TODO possible confusion - should everyone build their own? otherwise workdir for all is the same
+# TODO should everyone build their own? otherwise workdir for all is the same
 # TODO add -u -> --build-arg USERNAME=  to the build process
 ARG USERNAME=appuser
 # add authorized_keys to user .ssh
@@ -64,12 +64,3 @@ ADD --chown=appuser:appuser authorized_keys /home/$USERNAME/.ssh
 
 RUN chmod 600 /home/$USERNAME/.ssh/authorized_keys
 RUN chmod 700 /home/$USERNAME/.ssh
-
-
-# ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04
-# generates xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh:latest
-# run remotely
-# docker run --user=1000 --gpus all -it -v /mnt/share:/home/share --network=host --rm xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh
-
-# ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04 -p 12345 -t maytag -m johndoe
-# docker run --gpus all -it --entrypoint /bin/bash -v /mnt/local_share:/home/appuser/share --rm  johndoe/cuda_11.8.0-devel-ubuntu22.04_ssh:maytag
