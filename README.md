@@ -141,7 +141,7 @@ cd ../diffrast_example && ./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamb
 ```
 If furthermore the server has a mounted folder `/mnt/share` added to `docker` or 999 group with rwx to the group,
 
-```
+```bash
 docker run --gpus all -it --network=host --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch_diffrast_example
 (base) appuser@<myservername>:~$ cd ..
 (base) appuser@<myservername>:/home$ ls -lah
@@ -169,3 +169,33 @@ The `network=host` solution appears to enable any number of users to login shari
 Per port access can be also run passing -p 32728:32778 but then more need to be ufw allowed for more users.
 
 `docker run --gpus all -it -p 32728:32778 --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch_diffrast_example`
+
+
+
+# References
+Docker Documentation referenced in this project
+* Docker Install https://docs.docker.com/engine/install/
+* Post Installation https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
+* Remote Access https://docs.docker.com/config/daemon/remote-access/
+* Protect Socket https://docs.docker.com/engine/security/protect-access/
+* Docker context https://docs.docker.com/engine/context/working-with-contexts/
+* Networking https://docs.docker.com/network/network-tutorial-host/
+* Multistage Builds https://docs.docker.com/build/building/multi-stage/ (not used by this project)
+* Docker Compose https://docs.docker.com/compose/ (not used by this project)
+* Run reference https://docs.docker.com/engine/reference/run/
+* Command Reference https://docs.docker.com/engine/reference/commandline/docker/ 
+
+Visual Studio with Docker
+* Visual Studio Remote Docker SSH https://code.visualstudio.com/docs/containers/ssh 
+* Visual Studio Code Remote https://code.visualstudio.com/remote/advancedcontainers/develop-remote-host
+
+User Comments and Examples
+* SSHD example  https://git.iitd.ac.in/cs1140221/docker/blob/85988b33d299697f410a3a92db5d537fdbee955b/docs/examples/running_ssh_service.md 
+* SSHD example  https://gist.github.com/mlamarre/a3ac761bb2e47162b73e72ac7d5cc395
+* SSH ports https://www.baeldung.com/linux/ssh-multiple-ports 
+
+Ports
+* enable firewall  &nbsp;  `sudo ufw enable && sudo ufw status`
+* expose port &nbsp;  `sudo ufw allow $PORTN`
+* check port status  &nbsp; `nmap localhost -p $PORTN`
+* Check open ports  &nbsp; `netstat -lntu` (-l listening -n port number -t tcp ports -u udp ports)
