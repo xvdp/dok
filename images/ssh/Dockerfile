@@ -4,7 +4,7 @@ ARG baseimage
 FROM ${baseimage}
 ARG maintainer=xvdp
 ARG port=32778
-MAINTAINER $maintainer
+LABEL MAINTAINER $maintainer
 
 # TODO: possible confusion, clarify sshd_config vs ufw 
 # replace Port 22 -> 32778 in shd_config : to run with network=host

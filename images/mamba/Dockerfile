@@ -13,7 +13,7 @@
 ARG baseimage
 FROM ${baseimage}
 ARG maintainer=xvdp
-MAINTAINER $maintainer
+LABEL MAINTAINER $maintainer
 
 ARG MAMBA_NAME=Mambaforge
 ARG VERSION=latest/download/${MAMBA_NAME}

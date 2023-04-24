@@ -133,8 +133,11 @@ docker context ls
 cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04  -r <mydir_with_authorized_keys>
 cd ../mamba && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh
 cd ../torch && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
-# having git cloned a pip installable project eg, https://github.com/NVlabs/nvdiffrast t0 a <myprojects_dir>
+# if one had a pip installable local project e.g. called nvdiffrast  in <myprojects_dir>
 cd ../diffrast_example && ./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -i nvdiffrast -r <myprojects_dir>
+# or one can clone an external project https://github.com/NVlabs/nvdiffrast to <myprojects_dir> caching it.
+cd ../diffrast_example && ./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -g NVlabs/nvdiffrast -r <myprojects_dir>
+# it is common in using docker, allways gitclone or wget. I prefer cloning it locally for robustness.
 ```
 If furthermore the server has a mounted folder `/mnt/share` added to `docker` or 999 group with rwx to the group,
 

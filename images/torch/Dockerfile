@@ -6,7 +6,7 @@
 ARG baseimage
 FROM ${baseimage}
 ARG maintainer=xvdp
-MAINTAINER $maintainer
+LABEL MAINTAINER $maintainer
 
 SHELL ["/bin/bash", "-c"]
 

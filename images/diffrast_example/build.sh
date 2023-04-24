@@ -1,6 +1,7 @@
 #!/bin/bash
 # EXAMPLE file hot to add local projects
 
+#
 # 1. git clone an installable project, eg, https://github.com/NVlabs/nvdiffrast tp a <parent_folder>
 # 2. ./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -i nvdiffrast -r <parent_folder>
 # generates -> xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_torch_diffrast_example:latest
@@ -14,7 +15,7 @@
 # Args
 #   -b baseimage  # required: baseimage with OS, Graphic drivers, authorized_keys, etc.
 #   -r root       # required: this project defaults to
-#   -i projects   # array of folders under root, passed as ar=(project progect1) -i "${ar[*]}"
+#   -i projects   # array of folders under root, passed as ar=(project project1) -i "${ar[*]}"
 #       must match list of projects in Dockerfile
 #   -g gits       # array of gits, if not found as project, clone  ar=(NVlabs/nvdiffrast gituser/project2) -i "${ar[*]}"
 
