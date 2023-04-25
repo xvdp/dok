@@ -26,7 +26,7 @@
 
 
 # personal defaults to overwrite or pass with -r ROOT -i "${localprojects[*]}" -g "${githubprojects[*]}" 
-ROOT_LOCAL="~/work/gits"
+ROOT_LOCAL=~/work/gits
 PROJECTS_LOCAL=()
 GITS_LOCAL=(NVlabs/nvdiffrast)
 

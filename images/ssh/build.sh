@@ -15,14 +15,14 @@
 
 # kwargs
 #  -b (baseimage)           # REQUIRED
-#  -r (root)                # REQUIRED: substitute default: ~/work/dokcred folder with files 'authorized_keys'
+#  -r (root)                # REQUIRED: substitute default: ~/.shh folder with files 'authorized_keys'
 # optional
 #  -n (output image name)   # default: maintainer/baseimage_shh:tag
 #  -m (maintainer)          # default: xvdp
 #  -t (tag)                 # default: latest
 #  -p (port)                # default: 32778  # port to be exposed, needs to be opened in the server as well
 
-ROOT_LOCAL="~/work/dokcred"   # overwrite or pass -r <valid folder with authorized_keys file>
+ROOT_LOCAL=~/.ssh   # overwrite or pass -r <valid folder with authorized_keys file>
 
 if [ $# -eq 0 ]
   then

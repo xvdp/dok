@@ -5,14 +5,14 @@
 # 2. cat ~/id_rsa.pub >> ~/$AUTH_ROOT/authorized_keys
 # 3. ./buildall.sh
 
-AUTH_ROOT=~/work/dokcred
+AUTH_ROOT=~/.ssh
 PROJ_ROOT=~/work/gits
 if [ ! -d "${AUTH_ROOT}" ]; then
-  echo "${AUTH_ROOT} does not exist, modify script AUTH_ROOT with folder with authorized_keys are found
+  echo "${AUTH_ROOT} does not exist, modify script AUTH_ROOT with folder with authorized_keys are found"
   exit
 fi
 if [ ! -d "${PROJ_ROOT}" ]; then
-  echo "${PROJ_ROOT} does not exist, modify script PROJ_ROOT with projects folder
+  echo "${PROJ_ROOT} does not exist, modify script PROJ_ROOT with projects folder"
   exit
 fi
 
