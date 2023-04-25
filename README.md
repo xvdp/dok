@@ -144,17 +144,15 @@ docker context create --docker host=ssh://<user>@<server>--description='Remote I
 docker context use <my_remote_image>
 docker context ls
 ```
-4. If images are built in order (only required optargs included):
-``` bash
-# having created a file with ssh pub keys in  <mydir_with_authorized_keys>/autorized_keys
-cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04  -r <mydir_with_authorized_keys>
+4. Run images/buildall.sh
+```bash
+# having created a file with ssh pub keys in $AUTH_ROOT/autorized_keys
+# having a local folder with projects $PROJ_ROOT
+cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04  -r $AUTH_ROOT
 cd ../mamba && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh
 cd ../torch && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
-# if one had a pip installable local project e.g. called nvdiffrast  in <myprojects_dir>
-cd ../diffrast_example && ./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -i nvdiffrast -r <myprojects_dir>
-# or one can clone an external project https://github.com/NVlabs/nvdiffrast to <myprojects_dir> caching it.
-cd ../diffrast_example && ./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -g NVlabs/nvdiffrast -r <myprojects_dir>
-# it is common in using docker, allways gitclone or wget. I prefer cloning it locally for robustness.
+# local pip installable projects can be run with -i $myproject or -g ${gituser/gitproject} - clones and caches locally
+cd ../diffrast_example && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -g  NVlabs/nvdiffrast -r $PROJ_ROOT
 ```
 If furthermore the server has a mounted folder `/mnt/share` added to `docker` or 999 group with rwx to the group,
 
