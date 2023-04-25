@@ -116,6 +116,23 @@ requires
 * `-g "${ar[*]}" or <gitproject>` e.g. `ar=(NVlabs/nvdiffrast, <gituser>/<gitproject>)` every project requires an `ADD <gitproject>` to the Dockerfile
 
 ---
+## docker run reference
+
+* add to docker group `--group-add $(getent group docker | cut -d: -f3)`
+* as user 1000  `--user=1000 `
+* as current user `--user=$(id -u):$(getent group docker | cut -d: -f3)`
+* port mapping `-p 32778:32778`
+* sshd          `network=host`
+* gpu usage `--gpus all` or `--gpus device=0` or `--gpus device=1`
+* overwrite cmd `--entrypoint /bin/bash` | `python`
+* interactive `-it`
+* detached  `-d`
+* remove after exit `--rm`
+* use partial cpus `--cpuset-cpus="0-26"` # cpus 0-26
+* use partial cpu time `--cpus=0.5` # 50% of cpu time
+* map local folder `-v /mnt/share:/home/share` # local (must exist) to docker container
+
+
 ## To run from clients
 
 1. add valid autorized_keys file on client user ` ssh-keygen -t rsa `. Save to ` cat id_rsa.pub >> <mydir_with_authorized_keys>/authorized_keys`

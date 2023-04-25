@@ -5,8 +5,16 @@
 # 2. cat ~/id_rsa.pub >> ~/$AUTH_ROOT/authorized_keys
 # 3. ./buildall.sh
 
-AUTH_ROOT=/home/z/work/dokcred
-PROJ_ROOT=/home/z/work/gits
+AUTH_ROOT=~/work/dokcred
+PROJ_ROOT=~/work/gits
+if [ ! -d "${AUTH_ROOT}" ]; then
+  echo "${AUTH_ROOT} does not exist, modify script AUTH_ROOT with folder with authorized_keys are found
+  exit
+fi
+if [ ! -d "${PROJ_ROOT}" ]; then
+  echo "${PROJ_ROOT} does not exist, modify script PROJ_ROOT with projects folder
+  exit
+fi
 
 cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04  -r $AUTH_ROOT
 cd ../mamba && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh

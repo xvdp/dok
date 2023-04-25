@@ -26,7 +26,7 @@
 
 
 # personal defaults to overwrite or pass with -r ROOT -i "${localprojects[*]}" -g "${githubprojects[*]}" 
-ROOT_LOCAL="/home/z/work/gits"
+ROOT_LOCAL="~/work/gits"
 PROJECTS_LOCAL=()
 GITS_LOCAL=(NVlabs/nvdiffrast)
 
@@ -59,6 +59,10 @@ fi
 [ -z $PROJECTS ] && PROJECTS=("${PROJECTS_LOCAL[@]}");
 [ -z $GITS ] && GITS=("${GITS_LOCAL[@]}");
 
+if [ ! -d "${ROOT}" ]; then
+  echo pass valid -r ROOT kwarg where projects and local gits are stored
+  exit
+fi
 
 # local projects installation # must match Dockerfile ADD instructions
 # clone gits to ROOT and include as project

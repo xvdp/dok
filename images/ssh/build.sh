@@ -22,7 +22,7 @@
 #  -t (tag)                 # default: latest
 #  -p (port)                # default: 32778  # port to be exposed, needs to be opened in the server as well
 
-ROOT_LOCAL="/home/z/work/dokcred"   # overwrite or pass -r <valid folder with authorized_keys file>
+ROOT_LOCAL="~/work/dokcred"   # overwrite or pass -r <valid folder with authorized_keys file>
 
 if [ $# -eq 0 ]
   then
@@ -49,6 +49,10 @@ fi
 [ -z $PORT ] && PORT=32778;
 [ -z $ROOT ] && ROOT=$ROOT_LOCAL;
 
+if [ ! -d "${ROOT}" ]; then
+  echo pass valid -r ROOT kwarg .authorized_keys are found
+  exit
+fi
 
 NAME=`echo $NAME | cut -d "/" -f 2`   # remove maintainer prefix
 NAME=`echo "${NAME//:/$'_'}"`         # remove invalid chars in name ':'
