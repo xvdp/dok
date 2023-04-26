@@ -23,12 +23,17 @@ Every folder under `.images/` contains files: `Dockerfile, build.sh`. For conven
 When the `Dockerfile` requires external data for `ADD` or `COPY`, `build.sh` picks a location. Temporarily copies them into the `image\<name>` folder context to embeds into the image.  
 
 ## images
-1. ssh: built over OS and graphic driverrs, defines users incorporates shh authorized_keys in folder, adds .bashrc, exposes port and adds to `/etc/ssh/sshd_config`
-2. mamba: based on https://github.com/conda-forge/miniforge-images/blob/master/ubuntu/Dockerfile modified for nested builds.
-3. torch: adds pytorch and mitsuba dev # requires correct cuda context
-4. other projects: any project built on top of the the stack 
+1. ssh: built over OS and graphic driverrs, defines users incorporates shh authorized_keys in folder, adds .bashrc, exposes port and adds to `/etc/ssh/sshd_config`. Based on https://gist.github.com/mlamarre/a3ac761bb2e47162b73e72ac7d5cc395.
+2. mamba: Nested mamba image based on https://github.com/conda-forge/miniforge-images/blob/master/ubuntu/Dockerfile.
+3. torch: adds pytorch and mitsuba dev # requires correct cuda context.
+4. other projects, internal or github (eg. nvdiffrast) any project built on top of the the stack.
 
 If ssh authorized_keys changes, the entire stack needs to be rebuilt.
+
+**Notes /Caveats:**
+* Build scripts appear more complicated than needed, with known environments options can be hardcoded into a couple bash lines; this is especially relevant to the internal projects - as in the nvdiffrast example below.
+* The mamba/ conda is designed to run on (base) environment. With persistent multiuser containers one probably outght to run named envs.
+* `docker build` creates images in `docker context`.
 
 ---
 ## images/ssh
@@ -130,7 +135,7 @@ requires
 * remove after exit `--rm`
 * use partial cpus `--cpuset-cpus="0-26"` # cpus 0-26
 * use partial cpu time `--cpus=0.5` # 50% of cpu time
-* map local folder `-v /mnt/share:/home/share` # local (must exist) to docker container
+* map local folder `-v /mnt/share:/home/share` # folder on server (must exist if passed): folder on container
 
 
 ## To run from clients
@@ -154,12 +159,12 @@ cd ../torch && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
 # local pip installable projects can be run with -i $myproject or -g ${gituser/gitproject} - clones and caches locally
 cd ../diffrast_example && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -g  NVlabs/nvdiffrast -r $PROJ_ROOT
 ```
-If furthermore the server has a mounted folder `/mnt/share` added to `docker` or 999 group with rwx to the group,
 
 ```bash
 docker run --gpus all -it --network=host --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch_diffrast_example
-(base) appuser@<myservername>:~$ cd ..
-(base) appuser@<myservername>:/home$ ls -lah
+
+# ssh Dockerfile creates 3 users. Container /home/share links to prior created, root:docker chowned /mnt/share
+(base) appuser@<myservername>:~$ ls -lah /home
 total 28K
 drwxr-xr-x  1 root     root     4.0K Apr 21 20:35 .
 drwxr-xr-x  1 root     root     4.0K Apr 21 20:35 ..
@@ -168,9 +173,7 @@ drwxr-xr-x  1 appuser1 appuser1 4.0K Apr 21 19:45 appuser1
 drwxr-xr-x  1 appuser2 appuser2 4.0K Apr 21 19:45 appuser2
 drwxrwxrwx+ 7 root     docker   4.0K Apr 21 18:08 share
 
-
 (base) appuser@<myservername>:~$ python
-
 Python 3.9.16 | packaged by conda-forge | (main, Feb  1 2023, 21:39:03) 
 [GCC 11.3.0] on linux
 Type "help", "copyright", "credits" or "license" for more information.

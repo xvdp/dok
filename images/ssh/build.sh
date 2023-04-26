@@ -8,7 +8,7 @@
 # REQUIRES  -r <folder>, containing ssh generated authorized_keys for remote functionality
 
 # Example
-# ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04 -r <myfolder>
+# ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04 -r $AUTH_ROOT
 # creates -> xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh:latest
 
 # bashrc file in ssh/ is generic for shell preferences, can be replaced

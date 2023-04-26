@@ -11,11 +11,20 @@ LABEL MAINTAINER $maintainer
 SHELL ["/bin/bash", "-c"]
 
 USER root
-RUN apt-get update && apt-get install -y apt-utils apt-transport-https software-properties-common \
-apt-utils gnupg2 curl lsof xclip wget nano locate libasound2 pkg-config cmake \
-libglvnd0 libgl1 libglx0 libegl1 libgles2 libglvnd-dev libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
-zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libopenexr-dev libgdal-dev libopenexr-dev
-# && rm -rf /var/lib/apt/lists/* 
+RUN apt-get -yqq update && \
+        apt-get install -yq --no-install-recommends ca-certificates expat libgomp1 && \
+        apt-get autoremove -y && \
+        apt-get clean -y && \
+        apt-get install -yq --no-install-recommends ca-certificates expat libgomp1 \
+        libxcb-shape0-dev && apt-get autoremove -y && apt-get clean -y
+
+RUN apt-get update && \
+    apt-get install -y apt-utils apt-transport-https software-properties-common \
+    apt-utils gnupg2 curl lsof xclip wget nano locate libasound2 pkg-config cmake \
+    libglvnd0 libgl1 libglx0 libegl1 libgles2 libglvnd-dev libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
+    zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libopenexr-dev libgdal-dev libopenexr-dev ffmpeg \
+    && libxcb-shape0-dev && apt-get autoremove -y && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* 
 
 USER appuser
 RUN chown appuser:appuser /home/appuser
@@ -28,8 +37,8 @@ RUN mamba install -y python=3.9
 
 RUN mamba install -y pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 RUN mamba install -y plotly h5py jupyter tqdm scikit-learn lmdb einops matplotlib pybind11 \
-openexr colour-science glfw pyopengl imageio imageio-ffmpeg \
-&& pip install --upgrade pip && pip install mitsuba mediapipe more_itertools pyexr ninja
+    openexr colour-science glfw pyopengl imageio imageio-ffmpeg \
+    && pip install --upgrade pip && pip install mitsuba mediapipe more_itertools pyexr ninja
 
 # from https://github.com/NVlabs/nvdiffrast/blob/main/docker/Dockerfile
 # for GLEW
