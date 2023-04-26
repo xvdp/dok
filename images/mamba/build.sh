@@ -3,8 +3,8 @@
 # requires baseimage arg
 
 # Example : after building images/ssh/Dockerfile
-# $ bash build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh
-# generates -> xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba:latest
+# $ bash build.sh -b xvdp/cuda1180-ubuntu2204_ssh
+# generates -> xvdp/cuda1180-ubuntu2204_ssh_mamba:latest
 
 if [ $# -eq 0 ]
   then
@@ -27,8 +27,11 @@ fi
 [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
 
-NAME=`echo $NAME | cut -d "/" -f 2`  # remove maintainer prefix
-NAME=`echo "${NAME//:/$'_'}"`     # remove invalid chars in name ':'
+NAME=`echo $NAME | cut -d "/" -f 2`   # remove maintainer prefix
+NAME=`echo "${NAME//:/$''}"`         # remove ( : . devel- latest )
+NAME=`echo "${NAME//./$''}"`         # remove invalid chars in name ':'
+NAME=`echo "${NAME//devel-/$''}"`         
+NAME=`echo "${NAME//latest/$''}"`   
 NAME=$MAINTAINER"/"$NAME"_`basename ${PWD}`:$TAG" # add parent folder name _shh
 
 echo BASE_IMAGE=$BASEIMAGE

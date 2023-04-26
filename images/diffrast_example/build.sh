@@ -3,14 +3,14 @@
 
 #
 # 1. git clone an installable project, eg, https://github.com/NVlabs/nvdiffrast tp a <parent_folder>
-# 2. ./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -i nvdiffrast -r <parent_folder>
-# generates -> xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_torch_diffrast_example:latest
+# 2. ./build -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -i nvdiffrast -r <parent_folder>
+# generates -> xvdp/cuda1180-ubuntu2204_ssh_torch_diffrast_example:latest
 # Dockerfile needs to be modified to `ADD nvdiffrast`
 
 # if more projects need to be passed pass as array -i "${ar[*]}
 # Example
 # ar=(nvdiffrast, some_other_project)
-#./build -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -i "${ar[*]}"" -r <parent_folder>
+#./build -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -i "${ar[*]}"" -r <parent_folder>
 
 # Args
 #   -b baseimage  # required: baseimage with OS, Graphic drivers, authorized_keys, etc.
@@ -89,8 +89,11 @@ done
 for proj in "${PROJECTS[@]}"; do cp -rf "${ROOT}/${proj}" . ; done
 
 
-NAME=`echo $NAME | cut -d "/" -f 2`  # remove maintainer prefix
-NAME=`echo "${NAME//:/$'_'}"`     # remove invalid chars in name ':'
+NAME=`echo $NAME | cut -d "/" -f 2`   # remove maintainer prefix
+NAME=`echo "${NAME//:/$''}"`         # remove ( : . devel- latest )
+NAME=`echo "${NAME//./$''}"`         # remove invalid chars in name ':'
+NAME=`echo "${NAME//devel-/$''}"`         
+NAME=`echo "${NAME//latest/$''}"`   
 NAME=$MAINTAINER"/"$NAME"_`basename ${PWD}`:$TAG" # add parent folder name _shh
 
 echo BASE_IMAGE=$BASEIMAGE

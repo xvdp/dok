@@ -9,7 +9,7 @@
 
 # Example
 # ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04 -r $AUTH_ROOT
-# creates -> xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh:latest
+# creates -> xvdp/cuda1180-ubuntu2204:latest
 
 # bashrc file in ssh/ is generic for shell preferences, can be replaced
 
@@ -55,7 +55,10 @@ if [ ! -d "${ROOT}" ]; then
 fi
 
 NAME=`echo $NAME | cut -d "/" -f 2`   # remove maintainer prefix
-NAME=`echo "${NAME//:/$'_'}"`         # remove invalid chars in name ':'
+NAME=`echo "${NAME//:/$''}"`         # remove ( : . devel- latest )
+NAME=`echo "${NAME//./$''}"`         # remove invalid chars in name ':'
+NAME=`echo "${NAME//devel-/$''}"`         
+NAME=`echo "${NAME//latest/$''}"`   
 NAME=$MAINTAINER"/"$NAME"_`basename ${PWD}`:$TAG" # add parent folder name _shh
 
 echo "${ROOT}/authorized_keys"

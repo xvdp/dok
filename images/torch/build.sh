@@ -8,8 +8,8 @@
 # assumes user appuser has been created
 
 # Example : after building images/ssh/Dockerfile
-# $ bash build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
-# generates -> xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch:latest
+# $ bash build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba
+# generates -> xvdp/cuda1180-ubuntu2204_ssh_mamba_torch:latest
 
 # optional args 
 # -m maintainer   default: xvdp
@@ -22,27 +22,64 @@ if [ $# -eq 0 ]
     exit
 fi
 
-while getopts b:n:m:t: option; do case ${option} in
+ROOT_LOCAL=~/work/gits
+GITS=(pytorch/vision)
+
+while getopts b:n:m:t:r:g: option; do case ${option} in
 b) BASEIMAGE=${OPTARG};;
 n) NAME=${OPTARG};;
 m) MAINTAINER=${OPTARG};;
 t) TAG=${OPTARG};;
+r) ROOT=${OPTARG};;       # project root for local installs
 esac; done
 
 if [ -z $BASEIMAGE ]; then
     echo "no base image supplied using arg $1"
     BASEIMAGE=$1
 fi
+# Defaults
+[ -z $ROOT ] && ROOT=$ROOT_LOCAL;
 [ -z $MAINTAINER ] && MAINTAINER="xvdp";
 [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
+[ -z $GITS ] && GITS=("${GITS_LOCAL[@]}");
 
-NAME=`echo $NAME | cut -d "/" -f 2`  # remove maintainer prefix
-NAME=`echo "${NAME//:/$'_'}"`     # remove invalid chars in name ':'
+if [ ! -d "${ROOT}" ]; then
+  echo pass valid -r ROOT kwarg where projects and local gits are stored
+  exit
+fi
+
+PROJECTS=()
+cd ${ROOT}
+for proj in "${GITS[@]}"; do
+  if [ ! -d "${ROOT}/`basename ${proj}`" ];then
+      echo "   cloning:  https://github.com/${proj}"
+      git clone "https://github.com/${proj}"
+  else
+    echo "   using local:   ${ROOT}/`basename ${proj}`"
+  fi
+  PROJECTS+=(`basename ${proj}`)
+done
+cd -
+
+for proj in "${PROJECTS[@]}"; do
+  if [ ! -d "${ROOT}/${proj}" ];then
+    echo "BUILD ERROR: ${ROOT}/${proj} not found, cannot build ...";
+    exit
+  fi
+done
+for proj in "${PROJECTS[@]}"; do cp -rf "${ROOT}/${proj}" . ; done
+
+NAME=`echo $NAME | cut -d "/" -f 2`   # remove maintainer prefix
+NAME=`echo "${NAME//:/$''}"`         # remove ( : . devel- latest )
+NAME=`echo "${NAME//./$''}"`         # remove invalid chars in name ':'
+NAME=`echo "${NAME//devel-/$''}"`         
+NAME=`echo "${NAME//latest/$''}"`   
 NAME=$MAINTAINER"/"$NAME"_`basename ${PWD}`:$TAG" # add parent folder name _shh
 
 echo BASE_IMAGE=$BASEIMAGE
 echo "NAME="$NAME
+
 
 docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
 

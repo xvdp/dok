@@ -40,7 +40,7 @@ If ssh authorized_keys changes, the entire stack needs to be rebuilt.
 
 `./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04`
 
-creates: `xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh:latest`
+creates: `xvdp/cuda1180-ubuntu2204_ssh:latest`
 
 requires
 * `-b baseimage   ` e.g. nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -67,12 +67,12 @@ Should be built before any docker image that requires `$HOME`
 
 ...
 ## images/mamba
-`./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh`
+`./build.sh -b xvdp/cuda1180-ubuntu2204_ssh`
 
-creates: `xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba:latest`
+creates: `xvdp/cuda1180-ubuntu2204_ssh_mamba:latest`
 
 requires
-* `-b baseimage   `  e.g. xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh
+* `-b baseimage   `  e.g. xvdp/cuda1180-ubuntu2204_ssh
 
 optional
 * `-m   `   maintainer, default: `xvdp`
@@ -85,12 +85,12 @@ Adds mamba installation on /opt/conda and gives all users write permissions.
 
 ...
 ## images/torch
-`./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba`
+`./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba`
 
-creates: `xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch:latest`
+creates: `xvdp/cuda1180-ubuntu2204_ssh_mamba_torch:latest`
 
 requires
-* `-b baseimage   `  e.g. xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
+* `-b baseimage   `  e.g. xvdp/cuda1180-ubuntu2204_ssh_mamba
 
 optional
 * `-m   `   maintainer, default: `xvdp`
@@ -108,14 +108,14 @@ Default entry point to jupyter notebook headless, to run as bash or python run w
 Example file how to add local projects
 
 1. choose a pip installbable project eg. `cd git <projects_parent> clone https://github.com/NVlabs/nvdiffrast `
-2. `./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -i nvdiffrast -r <projects_parent>`
+2. `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -i nvdiffrast -r <projects_parent>`
 or 
-3. `./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -g NVlabs/nvdiffrast -r <projects_parent>`
+3. `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -g NVlabs/nvdiffrast -r <projects_parent>`
 
-generates -> `xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch_diffrast_example:latest`
+generates -> `xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffrast_example:latest`
 
 requires
-* `-b baseimage   `  e.g. xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch
+* `-b baseimage   `  e.g. xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 * `-r <projects_parent>` as written `build.sh` requires every project to be inside same folder.
 * `-i "${ar[*]}" or <myproject>` e.g. `ar=(nvdiffrast, <myproject>)` every project requires an `ADD <myproject>` to the Dockerfile
 * `-g "${ar[*]}" or <gitproject>` e.g. `ar=(NVlabs/nvdiffrast, <gituser>/<gitproject>)` every project requires an `ADD <gitproject>` to the Dockerfile
@@ -137,6 +137,10 @@ requires
 * use partial cpu time `--cpus=0.5` # 50% of cpu time
 * map local folder `-v /mnt/share:/home/share` # folder on server (must exist if passed): folder on container
 
+Examples
+
+`docker run --gpus all -it -v /mnt/share:/home/share --network=host --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch:latest`
+
 
 ## To run from clients
 
@@ -149,19 +153,19 @@ docker context create --docker host=ssh://<user>@<server>--description='Remote I
 docker context use <my_remote_image>
 docker context ls
 ```
-4. Run images/buildall.sh
+4. Build: `images/buildall.sh`
 ```bash
 # having created a file with ssh pub keys in $AUTH_ROOT/autorized_keys
 # having a local folder with projects $PROJ_ROOT
 cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04  -r $AUTH_ROOT
-cd ../mamba && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh
-cd ../torch && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
+cd ../mamba && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh
+cd ../torch && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba
 # local pip installable projects can be run with -i $myproject or -g ${gituser/gitproject} - clones and caches locally
-cd ../diffrast_example && ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch -g  NVlabs/nvdiffrast -r $PROJ_ROOT
+cd ../diffrast_example && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -g  NVlabs/nvdiffrast -r $PROJ_ROOT
 ```
-
+Run example project with locally shared folder
 ```bash
-docker run --gpus all -it --network=host --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch_diffrast_example
+docker run --gpus all -it --network=host --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffrast_example
 
 # ssh Dockerfile creates 3 users. Container /home/share links to prior created, root:docker chowned /mnt/share
 (base) appuser@<myservername>:~$ ls -lah /home
@@ -186,7 +190,7 @@ The `network=host` solution appears to enable any number of users to login shari
 # WIP network tunneling and access require validation
 Per port access can be also run passing -p 32728:32778 but then more need to be ufw allowed for more users.
 
-`docker run --gpus all -it -p 32728:32778 --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba_torch_diffrast_example`
+`docker run --gpus all -it -p 32728:32778 --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffrast_example`
 
 
 
@@ -206,6 +210,7 @@ Docker Documentation referenced in this project
 Visual Studio with Docker
 * Visual Studio Remote Docker SSH https://code.visualstudio.com/docs/containers/ssh 
 * Visual Studio Code Remote https://code.visualstudio.com/remote/advancedcontainers/develop-remote-host
+* https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh
 
 User Comments and Examples
 * SSHD example  https://git.iitd.ac.in/cs1140221/docker/blob/85988b33d299697f410a3a92db5d537fdbee955b/docs/examples/running_ssh_service.md 

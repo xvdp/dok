@@ -1,6 +1,6 @@
 # @xvdp
-# installs torch jupyter mitsuba
 # requires a baseimage with ssh, mamba and torch supported OS and cuda, 
+# installs apt ffmpeg 4.4, mamba ffmpeg 5.1 torch 2.0 jupyter mitsuba
 # ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
 
 ARG baseimage
@@ -16,29 +16,39 @@ RUN apt-get -yqq update && \
         apt-get autoremove -y && \
         apt-get clean -y && \
         apt-get install -yq --no-install-recommends ca-certificates expat libgomp1 \
-        libxcb-shape0-dev && apt-get autoremove -y && apt-get clean -y
+        libxcb-shape0-dev ffmpeg && apt-get autoremove -y && apt-get clean -y
 
 RUN apt-get update && \
     apt-get install -y apt-utils apt-transport-https software-properties-common \
     apt-utils gnupg2 curl lsof xclip wget nano locate libasound2 pkg-config cmake \
     libglvnd0 libgl1 libglx0 libegl1 libgles2 libglvnd-dev libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
-    zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libopenexr-dev libgdal-dev libopenexr-dev ffmpeg \
-    && libxcb-shape0-dev && apt-get autoremove -y && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/* 
+    zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libopenexr-dev libgdal-dev libopenexr-dev \
+    libxcb-shape0-dev && apt-get autoremove -y && apt-get clean -y
 
 USER appuser
-RUN chown appuser:appuser /home/appuser
+# install latest ffmpeg, installs py 3.9 due to compatibility issues 
+RUN chown appuser:appuser /home/appuser \
+    && conda config --add channels pytorch && conda config --set channel_priority flexible \
+    && source activate && mamba init && mamba install -y python=3.9 ffmpeg 
 
-# needs baseimage with mamba installation
-RUN conda config --add channels pytorch && conda config --set channel_priority strict && source activate && mamba init
-# it is not reccomented to overwrite (base) instead create an environemnt... but for now we do it
-# with later versions of pytorch and packages this could be removed, or an environment added
-RUN mamba install -y python=3.9
+# channel_priority strict to install pytorch correctly
+RUN conda config --set channel_priority strict \
+    && mamba install -y pytorch torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 
-RUN mamba install -y pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+# until https://github.com/pytorch/vision/issues/7508 reinstall
+RUN conda config --set channel_priority flexible \
+    && mamba install -y ffmpeg=5.1.2
+
 RUN mamba install -y plotly h5py jupyter tqdm scikit-learn lmdb einops matplotlib pybind11 \
-    openexr colour-science glfw pyopengl imageio imageio-ffmpeg \
-    && pip install --upgrade pip && pip install mitsuba mediapipe more_itertools pyexr ninja
+     openexr colour-science glfw pyopengl
+
+RUN pip install --upgrade pip && pip install mitsuba mediapipe more_itertools pyexr \
+    ninja imageio imageio-ffmpeg
+
+# until the issues with ffmpeg are fixd, clone and compile
+
+ADD --chown=appuser:appuser vision vision
+RUN cd vision && python setup.py install && cd .. && rm -rf vision
 
 # from https://github.com/NVlabs/nvdiffrast/blob/main/docker/Dockerfile
 # for GLEW
