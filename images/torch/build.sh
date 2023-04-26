@@ -83,3 +83,6 @@ echo "NAME="$NAME
 
 docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
 
+# cleanup temp projects
+for proj in "${PROJECTS[@]}"; do rm -rf "${proj}" ; done
+
