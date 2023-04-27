@@ -1,10 +1,12 @@
 # dok
-## nested Dockerfile for remote multiuser development
-### images for torch develoment with cuda
+## Nested Dockerfile for remote multiuser development
 
-Docker images created here are meant to be used as a stack avoiding env passing in docker multistage. A baseimage can be passed into every new image.
 
-WIP: requires netowrk validation and could benefit from some local caching.
+This project is a stack of Docker image shells for multiuser development. OS and cuda are passed as baseimage at build time. Adding or replacing projects is modular. 
+
+To note: for deployment a ligher image with exact control of versions is preferred.
+
+
 
 ```
 ARG baseimage
@@ -31,9 +33,9 @@ When the `Dockerfile` requires external data for `ADD` or `COPY`, `build.sh` pic
 If ssh authorized_keys changes, the entire stack needs to be rebuilt.
 
 **Notes /Caveats:**
-* Build scripts appear more complicated than needed, with known environments options can be hardcoded into a couple bash lines; this is especially relevant to the internal projects - as in the nvdiffrast example below.
+* Build scripts are more complicated than needed, with known environments options can be hardcoded into a couple bash lines.
 * The mamba/ conda is designed to run on (base) environment. With persistent multiuser containers one probably outght to run named envs.
-* `docker build` creates images in `docker context`.
+* If the `docker context` is a remote server, `docker build` command processes the image context locally and creates the image in the server.
 
 ---
 ## images/ssh
@@ -91,6 +93,8 @@ creates: `xvdp/cuda1180-ubuntu2204_ssh_mamba_torch:latest`
 
 requires
 * `-b baseimage   `  e.g. xvdp/cuda1180-ubuntu2204_ssh_mamba
+* `-r` local project root *torchvision.0.15 breaks ffmpeg unless cloned and installed*
+
 
 optional
 * `-m   `   maintainer, default: `xvdp`
