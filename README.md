@@ -1,11 +1,11 @@
 # dok
 ## Nested Dockerfile for remote multiuser development
 
-
 This project is a stack of Docker image shells for multiuser development. OS and cuda are passed as baseimage at build time. Adding or replacing projects is modular. 
 
-To note: for deployment a ligher image with exact control of versions is preferred.
-
+Notes:
+* follow installation instructions for docker
+* for deployment a ligher image with exact control of versions is preferred.
 
 
 ```
@@ -36,6 +36,10 @@ If ssh authorized_keys changes, the entire stack needs to be rebuilt.
 * Build scripts are more complicated than needed, with known environments options can be hardcoded into a couple bash lines.
 * The mamba/ conda is designed to run on (base) environment. With persistent multiuser containers one probably outght to run named envs.
 * If the `docker context` is a remote server, `docker build` command processes the image context locally and creates the image in the server.
+
+## TODO
+* detail remote vscode/jupyter development.
+* validate caching --no-cache on local projects
 
 ---
 ## images/ssh
@@ -109,12 +113,17 @@ Default entry point to jupyter notebook headless, to run as bash or python run w
 
 ...
 ## images/diffrast_example
-Example file how to add local projects
+Example file how to add local projects.
 
 1. choose a pip installbable project eg. `cd git <projects_parent> clone https://github.com/NVlabs/nvdiffrast `
-2. `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -i nvdiffrast -r <projects_parent>`
-or 
-3. `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -g NVlabs/nvdiffrast -r <projects_parent>`
+2. `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -i nvdiffrast -r <projects_parent>`. 
+This could be used for any local project; the build.sh script, copies the project to the Dockerfile context then cleans it up. Adding or changing the project requires the Dockerfile to be modified as well.
+
+The build sript can also clone and keep a local cache of the project. Alternatively one could clone and install every time from repository which may be more suitable in some cases.
+
+3. `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -g NVlabs/nvdiffrast -r <projects_parent>`.
+
+Note. Notice that the `docker build` in build.sh is run with `--no-cache` option. This ensures that local changes to projects are propagated into the image. While the build cache is important when downloading data from cloud which could require multiple GB of data to be transferred, it is less onerous with local data. The --no-cache flags should be avoided when possible in images which are base to other images.
 
 generates -> `xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffrast_example:latest`
 
@@ -125,29 +134,73 @@ requires
 * `-g "${ar[*]}" or <gitproject>` e.g. `ar=(NVlabs/nvdiffrast, <gituser>/<gitproject>)` every project requires an `ADD <gitproject>` to the Dockerfile
 
 ---
-## docker run reference
 
-* add to docker group `--group-add $(getent group docker | cut -d: -f3)`
-* as user 1000  `--user=1000 `
-* as current user `--user=$(id -u):$(getent group docker | cut -d: -f3)`
-* port mapping `-p 32778:32778`
-* sshd          `network=host`
-* gpu usage `--gpus all` or `--gpus device=0` or `--gpus device=1`
-* overwrite cmd `--entrypoint /bin/bash` | `python`
-* interactive `-it`
-* detached  `-d`
-* remove after exit `--rm`
-* use partial cpus `--cpuset-cpus="0-26"` # cpus 0-26
-* use partial cpu time `--cpus=0.5` # 50% of cpu time
-* map local folder `-v /mnt/share:/home/share` # folder on server (must exist if passed): folder on container
+## TODO regarding weights and data for git and local projects:
+Many projects require data files or files with weigths, too large to be stored on github. These files may be distributed in many forms: github large file storage, google drives, model zoos and hubs, huggingface, etc. 
 
-Examples
+This repository does not provide a general solution. We tested three approaches for storing large data:
+* son the machine where the docker images are built and copying it with the project.
+* on a server drive and mounting in on docker run
+* on a docker volume.
 
-`docker run --gpus all -it -v /mnt/share:/home/share --network=host --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch:latest`
+---
+
+## run reference
+https://docs.docker.com/engine/reference/commandline/run/  `docker run`
+
+* `--user=1000 ` as user 1000  
+* `--user=$(id -u):$(getent group docker | cut -d: -f3)` as current user on docker group
+* `--group-add $(getent group docker | cut -d: -f3)` add to docker group
+* `-it` interactive transfer signals
+* `-d` detached  
+* `--name` container name
+* `--entrypoint /bin/bash` | `-entrypoint python` overwrite cmd 
+* `--rm` autoremove on exit
+
+network
+* `-p 32778:32778` port mapping, port must be allowed thru firewall
+* `--network=host` if sshd set up (as in dok/images/ssh/Dockerfile)
 
 
-## To run from clients
+resources ram and cpu
+* `docker info | grep "Total Memory"`  # RAM, (equivalent to `free -g` in docker)
+* `docker info | grep CPU` # num CPUs
+    * or `lscpu | grep "CPU(s)"` # CPUs and distribution on NUMA nodes
 
+resources gpu https://nvidia.github.io/nvidia-container-runtime/ 
+* `apt-get install nvidia-container-runtime && which nvidia-container-runtime-hook`
+* `docker run -it --rm --gpus all ubuntu nvidia-smi` (equivalent to `nvidia-smi` in docker)
+
+resource allocation # https://docs.docker.com/config/containers/resource_constraints/
+* `--gpus all` or `--gpus device=0  ` or `--gpus '"device=0,1"'` 
+* `--cpuset-cpus="0-13,28-41"`
+* `--cpus=0.5   `  # 50% of CPU time
+* `--memory=32g`   # limits memory (in this case to 32G) a container can use regardless of other processes, default: unlimited
+* `--kernel-memory`# limits memory a container can use of the free memory, containers wait for availability, default: unlimited
+
+
+volumes: shared memory, drives, data backup  https://docs.docker.com/storage/volumes/ 
+* `-v /mnt/share:/home/share` mount shared volumes (`physical:container`)
+
+shared volume e.g. /mnt/share has to have read and write permisions to every user in shared group
+* `cd /mnt/share && sudo chown -R root:docker /mnt/share && sudo chmod -R 775 /mnt/share`
+
+interaction
+* `Ctrl+P,Ctrl+Q` Detach sequence if run with `-it` without stopping container
+* `exit` exits and stops container
+* `docker start $name`
+
+Multiple services from one container https://docs.docker.com/config/containers/multi-service_container/
+* It is not recommended as some processes can remain services can remain hanging, but it is possible
+* **TODO: use tmux**
+* connecting to entrypoint from more than one client, mirrors consoles
+* exec different commands on the same detached container is possible, see `exec` and `attach` example  below
+
+---
+
+## run examples
+
+To run from clients on images stored in server
 1. add valid autorized_keys file on client user ` ssh-keygen -t rsa `. Save to ` cat id_rsa.pub >> <mydir_with_authorized_keys>/authorized_keys`
 2. expose server port to ufw `sudo ufw enable && sudo ufw allow <port> && sudo ufw allow ssh`  **# TODO validate**
 3. create and switch to remote context on client machine https://docs.docker.com/engine/security/protect-access/
@@ -167,8 +220,9 @@ cd ../torch && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba
 # local pip installable projects can be run with -i $myproject or -g ${gituser/gitproject} - clones and caches locally
 cd ../diffrast_example && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -g  NVlabs/nvdiffrast -r $PROJ_ROOT
 ```
-Run example project with locally shared folder
+Run with locally shared folder `-v`
 ```bash
+# runs -i interactive -t transfering key shortcuts --rm removed container on exit
 docker run --gpus all -it --network=host --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffrast_example
 
 # ssh Dockerfile creates 3 users. Container /home/share links to prior created, root:docker chowned /mnt/share
@@ -189,13 +243,46 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> nvdiffrast.__version__
 '0.3.0'
 ```
-The `network=host` solution appears to enable any number of users to login sharing environments.
 
-# WIP network tunneling and access require validation
-Per port access can be also run passing -p 32728:32778 but then more need to be ufw allowed for more users.
+Run detached (-d) named (--name) persistent container on partial cpu/gpu
 
-`docker run --gpus all -it -p 32728:32778 --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffrast_example`
+```bash
+# explicitly name container, with -dit: detached, interactive, tty
+docker run --user=1000 --name VQDemo --gpus device=1 --cpuset-cpus="26-52" -v /mnt/share:/home/share --network=host -dit xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face
+# attach 2 services, on one console, jupyter on the other the default entry point
+docker exec -it VQDemo_changed jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778 # console 1
+docker attach VQDemo # console 2
+```
 
+* to remove `docker container rm --force $IMAGE_ID`
+* `docker rm VQDemo`
+
+Development
+
+committing https://docs.docker.com/engine/reference/commandline/commit/ creates a new image
+``` bash
+# if container add63186840f is open
+docker commit add63186840f xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face_commit
+# can be then be loaded w other options, e.g. different mounted volume, different resources, etc
+docker run --user=1000 --name VQDemo_with_changes --gpus device=0 --cpuset-cpus="0-25" -v /mnt/OTHERFOLDER:/home/NEWSHARE --network=host -dit xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face_commit
+docker ps -a
+CONTAINER ID   IMAGE                                                       COMMAND                  CREATED          STATUS                      PORTS     NAMES
+b50a7b37b123   xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face_commit   "/opt/nvidia/nvidia_…"   14 seconds ago   Up 13 seconds                         VQDemo_with_changes
+add63186840f   xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face          "/opt/nvidia/nvidia_…"   21 hours ago     Exited (130) 1 hour ago               VQDemo
+# since run as -dit, attach to open container
+docker attach VQDemo_with_changes
+```
+
+Networking
+* The `network=host` solution appears to enable any number of users to login sharing environments.
+* per port access can be also run passing -p 32728:32778 but then more need to be ufw allowed for more users.
+
+```bash
+# run on specific port
+docker run --gpus all -it -p 32728:32778 --user 1000 -v /mnt/share:/home/share --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+# run leveraging sshd config
+docker run --gpus all -it -v /mnt/share:/home/share --network=host --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch:latest
+```
 
 
 # References

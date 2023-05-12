@@ -1,4 +1,9 @@
-# @xvdp
+# @xvdp # TODO - include in this build - 
+# apt install rsync, nvtop, htop    # general mgmt
+# apt install libmpich-dev          # torch.distributed (guided-diffusion)
+# pip install mpi4py blobfile       # message passing interface (guided-diffusion)
+# pip install nvdiffrast/. &&  rm -rf nvdiffrast  # either clone and local or clone in github
+
 # requires a baseimage with ssh, mamba and torch supported OS and cuda, 
 # installs apt ffmpeg 4.4, mamba ffmpeg 5.1 torch 2.0 jupyter mitsuba
 # ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
