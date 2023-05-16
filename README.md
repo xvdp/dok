@@ -170,14 +170,15 @@ resources ram and cpu
 resources gpu https://nvidia.github.io/nvidia-container-runtime/ 
 * `apt-get install nvidia-container-runtime && which nvidia-container-runtime-hook`
 * `docker run -it --rm --gpus all ubuntu nvidia-smi` (equivalent to `nvidia-smi` in docker)
+* `nvidia-smi topo -m` connection matrix
+* `nvidia-smi topo -p2p rw` read write peer to peer connections (ie. are gpus nvilinked)
 
 resource allocation # https://docs.docker.com/config/containers/resource_constraints/
 * `--gpus all` or `--gpus device=0  ` or `--gpus '"device=0,1"'` 
-* `--cpuset-cpus="0-13,28-41"`
+* `--cpuset-cpus="0-13"` # when assigning cpu and gpus, check topology to ensure they are on the same numa nodes.
 * `--cpus=0.5   `  # 50% of CPU time
 * `--memory=32g`   # limits memory (in this case to 32G) a container can use regardless of other processes, default: unlimited
 * `--kernel-memory`# limits memory a container can use of the free memory, containers wait for availability, default: unlimited
-
 
 volumes: shared memory, drives, data backup  https://docs.docker.com/storage/volumes/ 
 * `-v /mnt/share:/home/share` mount shared volumes (`physical:container`)
