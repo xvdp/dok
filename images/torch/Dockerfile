@@ -1,12 +1,11 @@
-# @xvdp # TODO - include in this build - 
-# apt install rsync, nvtop, htop    # general mgmt
-# apt install libmpich-dev          # torch.distributed (guided-diffusion)
-# pip install mpi4py blobfile       # message passing interface (guided-diffusion)
-# pip install nvdiffrast/. &&  rm -rf nvdiffrast  # either clone and local or clone in github
+# @xvdp
+# run example:
+# docker run --user 1000 --name torch --gpus device=1 --cpuset-cpus="14-27" -v /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+
 
 # requires a baseimage with ssh, mamba and torch supported OS and cuda, 
-# installs apt ffmpeg 4.4, mamba ffmpeg 5.1 torch 2.0 jupyter mitsuba
-# ./build.sh -b xvdp/cuda_11.8.0-devel-ubuntu22.04_ssh_mamba
+# installs apt ffmpeg 4.4, mamba ffmpeg 5.1 torch >= 2.0 jupyter mitsuba nvdiffrast
+# ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba
 
 ARG baseimage
 FROM ${baseimage}
@@ -18,20 +17,15 @@ SHELL ["/bin/bash", "-c"]
 USER root
 RUN apt-get -yqq update && \
         apt-get install -yq --no-install-recommends ca-certificates expat libgomp1 && \
-        apt-get autoremove -y && \
-        apt-get clean -y && \
-        apt-get install -yq --no-install-recommends ca-certificates expat libgomp1 \
-        libxcb-shape0-dev ffmpeg && apt-get autoremove -y && apt-get clean -y
-
-RUN apt-get update && \
-    apt-get install -y apt-utils apt-transport-https software-properties-common \
-    apt-utils gnupg2 curl lsof xclip wget nano locate libasound2 pkg-config cmake \
-    libglvnd0 libgl1 libglx0 libegl1 libgles2 libglvnd-dev libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
-    zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libopenexr-dev libgdal-dev libopenexr-dev \
-    libxcb-shape0-dev && apt-get autoremove -y && apt-get clean -y
+        apt-get autoremove -y && apt-get clean -y && \
+        apt-get install -yq --no-install-recommends apt-utils apt-transport-https software-properties-common \
+        pkg-config cmake curl lsof xclip wget nano locate rsync nvtop htop libmpich-dev libxcb-shape0-dev  \
+        libglvnd0 libgl1 libglx0 libegl1 libgles2 libglvnd-dev libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
+        zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libopenexr-dev libgdal-dev ffmpeg gnupg2 libasound2 \
+        && apt-get autoremove -y && apt-get clean -y
 
 USER appuser
-# install latest ffmpeg, installs py 3.9 due to compatibility issues 
+
 RUN chown appuser:appuser /home/appuser \
     && conda config --add channels pytorch && conda config --set channel_priority flexible \
     && source activate && mamba init && mamba install -y python=3.9 ffmpeg 
@@ -42,18 +36,17 @@ RUN conda config --set channel_priority strict \
 
 # until https://github.com/pytorch/vision/issues/7508 reinstall
 RUN conda config --set channel_priority flexible \
-    && mamba install -y ffmpeg=5.1.2
+    && mamba install -y ffmpeg=5.1.2 plotly h5py jupyter tqdm scikit-learn scikit-image einops matplotlib pybind11 \
+    openexr colour-science glfw pyopengl && mamba clean -ya
 
-RUN mamba install -y plotly h5py jupyter tqdm scikit-learn lmdb einops matplotlib pybind11 \
-     openexr colour-science glfw pyopengl
-
-RUN pip install --upgrade pip && pip install mitsuba mediapipe more_itertools pyexr \
-    ninja imageio imageio-ffmpeg
-
-# until the issues with ffmpeg are fixd, clone and compile
-
+# until the issues between ffmpeg and torchvision are fixd, clone and compile
 ADD --chown=appuser:appuser vision vision
-RUN cd vision && python setup.py install && cd .. && rm -rf vision
+ADD --chown=appuser:appuser nvdiffrast nvdiffrast
+
+RUN pip install --upgrade pip && pip install --no-cache-dir lmdb mitsuba mediapipe more_itertools pyexr \
+    ninja imageio imageio-ffmpeg tb-nightly timm yapf filterpy numba addict tensorboardx \
+    transformers warmup_scheduler mpi4py blobfile \
+    vision/.  nvdiffrast/. && rm -rf vision && rm -rf nvdiffrast
 
 # from https://github.com/NVlabs/nvdiffrast/blob/main/docker/Dockerfile
 # for GLEW

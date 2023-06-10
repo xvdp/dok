@@ -23,7 +23,7 @@ if [ $# -eq 0 ]
 fi
 
 ROOT_LOCAL=~/work/gits
-GITS=(pytorch/vision)
+GITS_LOCAL=(pytorch/vision NVlabs/nvdiffrast)
 
 while getopts b:n:m:t:r:g: option; do case ${option} in
 b) BASEIMAGE=${OPTARG};;

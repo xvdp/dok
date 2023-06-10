@@ -107,9 +107,15 @@ optional
 
 Generates a docker image with latest pytorch. Baseimage needs to have appuser user, correct graphics divers to match torch build.
 
-cmd is `bin/bash`; 
+run example
 
-Default entry point to jupyter notebook headless, to run as bash or python run with `--entrypoint /bin/bash` or `--entrypoint python`
+`docker run --user 1000 --name torch --gpus device=1 --cpuset-cpus="14-27" -v /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch`
+
+Default entry point is `bin/bash`. Entry point can be redirected to python with `--entrypoint python` or jupyter. 
+
+It can also be started in bash and attached from a differetn console to jupyter, e.g.
+
+ `jupyter docker exec -it torchcontainer jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778`
 
 ...
 ## images/diffrast_example
