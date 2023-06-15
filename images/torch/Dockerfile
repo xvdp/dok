@@ -45,7 +45,7 @@ ADD --chown=appuser:appuser nvdiffrast nvdiffrast
 
 RUN pip install --upgrade pip && pip install --no-cache-dir lmdb mitsuba mediapipe more_itertools pyexr \
     ninja imageio imageio-ffmpeg tb-nightly timm yapf filterpy numba addict tensorboardx \
-    transformers warmup_scheduler mpi4py blobfile \
+    diffusers transformers warmup_scheduler mpi4py blobfile \
     vision/.  nvdiffrast/. && rm -rf vision && rm -rf nvdiffrast
 
 # from https://github.com/NVlabs/nvdiffrast/blob/main/docker/Dockerfile
