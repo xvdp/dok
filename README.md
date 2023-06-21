@@ -118,7 +118,15 @@ It can also be started in bash and attached from a differetn console to jupyter,
  `jupyter docker exec -it torchcontainer jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778`
 
 ...
-## images/diffrast_example
+## images/wuerstchen
+Pernias, Rampas, Aubrevile 2023 [Würstchen: Efficient Pretraining of Text-to-Image Models](https://arxiv.org/pdf/2306.00637.pdf)
+
+Built over _torch image, to test fork https://github.com/xvdp/wuerstchen/tree/xdev
+
+`docker run --user 1000 --name wue0 --gpus device=0 --cpuset-cpus="28-41" -v /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -v /mnt/Data/results:/home/results--network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_wuerstchen`
+
+...
+## images/diffrast_example  # TODO replace: project with different example, nvdiffrast has been included in torch image above
 Example file how to add local projects.
 
 1. choose a pip installbable project eg. `cd git <projects_parent> clone https://github.com/NVlabs/nvdiffrast `
@@ -176,7 +184,7 @@ resources ram and cpu
 resources gpu https://nvidia.github.io/nvidia-container-runtime/ 
 * `apt-get install nvidia-container-runtime && which nvidia-container-runtime-hook`
 * `docker run -it --rm --gpus all ubuntu nvidia-smi` (equivalent to `nvidia-smi` in docker)
-* `nvidia-smi topo -m` connection matrix
+* `nvidia-smi topo -m `  connection matrix, cpus, gpus, links, numa affinities.
 * `nvidia-smi topo -p2p rw` read write peer to peer connections (ie. are gpus nvilinked)
 
 resource allocation # https://docs.docker.com/config/containers/resource_constraints/
@@ -271,7 +279,7 @@ committing https://docs.docker.com/engine/reference/commandline/commit/ creates 
 # if container add63186840f is open
 docker commit add63186840f xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face_commit
 # can be then be loaded w other options, e.g. different mounted volume, different resources, etc
-docker run --user=1000 --name VQDemo_with_changes --gpus device=0 --cpuset-cpus="0-25" -v /mnt/OTHERFOLDER:/home/NEWSHARE --network=host -dit xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face_commit
+docker run --user=1000 --name VQDemo_with_changes --gpus device=0 --cpuset-cpus="0-13" -v /mnt/OTHERFOLDER:/home/NEWSHARE --network=host -dit xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face_commit
 docker ps -a
 CONTAINER ID   IMAGE                                                       COMMAND                  CREATED          STATUS                      PORTS     NAMES
 b50a7b37b123   xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face_commit   "/opt/nvidia/nvidia_…"   14 seconds ago   Up 13 seconds                         VQDemo_with_changes
