@@ -1,5 +1,8 @@
 #!/bin/bash
-
+# some diffuson models
+# wuerstchen
+# iadb
+#
 ## build atop of base image
 # ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 
@@ -40,6 +43,21 @@ ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
 MAINTAINER="xvdp"
 TAG="latest"
+
+#
+# IADB
+#
+cd ${ROOT}
+git2=xvdp/IADB
+name="`basename ${git2}`"
+proj="${ROOT}/${name}"
+if [ ! -d "${proj}" ];then
+    echo "   cloning:  https://github.com/${git2}"
+    git clone "https://github.com/${git2}"
+fi
+cd -
+cp -rf "${proj}" .
+ASSERT_DIR "${name}"
 
 #
 # Wuerstchen xvdp:dev
@@ -101,3 +119,4 @@ docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER
 # cleanup temp projects
 rm -rf "`basename ${git0}`"
 rm -rf "`basename ${git1}`"
+rm -rf "`basename ${git2}`"

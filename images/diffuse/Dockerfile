@@ -19,6 +19,9 @@ ADD --chown=appuser:appuser pytorch-tools pytorch-tools
 ADD --chown=appuser:appuser set_caches.sh set_caches.sh
 ADD --chown=appuser:appuser cache_from_mount.sh cache_from_mount.sh
 ADD --chown=appuser:appuser copy_laion.sh copy_laion.sh
+
+ADD --chown=appuser:appuser IADB IADB
+
 RUN chmod +x cache_from_mount.sh && chmod +x set_caches.sh \
     && chmod +x copy_laion.sh && mamba clean -ay
 
@@ -28,5 +31,6 @@ RUN pip install --no-cache-dir open_clip_torch webdataset \
 # commented out required installs - present in ./image/torch
 # RUN pip install --no-cache-dir transformers warmup_scheduler
 
-CMD ["/bin/bash" ] 
-#, "-c", "./cache_from_mount.sh", "&"]
+RUN bash -c ./cache_from_mount.sh
+CMD ["/bin/bash" ]
+

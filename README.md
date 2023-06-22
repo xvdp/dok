@@ -118,12 +118,17 @@ It can also be started in bash and attached from a differetn console to jupyter,
  `jupyter docker exec -it torchcontainer jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778`
 
 ...
-## images/wuerstchen
-Pernias, Rampas, Aubrevile 2023 [Würstchen: Efficient Pretraining of Text-to-Image Models](https://arxiv.org/pdf/2306.00637.pdf)
+## images/diffuse
+Diffusion playground
 
-Built over _torch image, to test fork https://github.com/xvdp/wuerstchen/tree/xdev
+* Pernias, Rampas, Aubrevile 2023 [Würstchen: Efficient Pretraining of Text-to-Image Models](https://arxiv.org/pdf/2306.00637.pdf)
 
-`docker run --user 1000 --name wue0 --gpus device=0 --cpuset-cpus="28-41" -v /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -v /mnt/Data/results:/home/results--network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_wuerstchen`
+fork -> https://github.com/xvdp/wuerstchen/tree/xdev
+* Heitz, Belcour, Chambon 2023 [Iterative α-(de)Blending: a Minimalist Deterministic Diffusion Model](https://arxiv.org/pdf/2305.03486.pdf)
+
+fork -> https://github.com/xvdp/IADB
+
+`docker run --user 1000 --name d --gpus device=0 --cpuset-cpus="28-41" -v /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -v /mnt/Data/results:/home/results --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffuse`
 
 ...
 ## images/diffrast_example  # TODO replace: project with different example, nvdiffrast has been included in torch image above
