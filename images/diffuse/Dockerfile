@@ -31,6 +31,5 @@ RUN pip install --no-cache-dir open_clip_torch webdataset \
 # commented out required installs - present in ./image/torch
 # RUN pip install --no-cache-dir transformers warmup_scheduler
 
-RUN bash -c ./cache_from_mount.sh
 CMD ["/bin/bash" ]
 
