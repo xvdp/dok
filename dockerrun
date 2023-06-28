@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# `./dockerrun <args>`
+# identical to `docker run` with extra arg `--cache` which maps to env and volume: -e and -v
+# to names and paths, with the purpose of replacing ~/.cache with a mounted volume for selected env variables
+
+names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME)
+paths=("torch" "torch_extensions" "dnnlib" "huggingface")
+
+# example 
+
+# ./dockerrun --user 1000 --name torch --gpus device=0 --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+
+# docker run --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 --network=host -it --rm -v /mnt/Data/weights:/home/weights \
+# -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface \
+# xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+
+docker_args=()
+cache_arg=()
+volume_arg=()
+image=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --cache)
+            volume_arg+=(-v "${2}")
+
+            IFS=":"
+            read -ra parts <<< "${2}"
+            cache_arg+=(-e "XDG_CACHE_HOME=${parts[1]}")
+            i=0
+            for name in "${names[@]}"; do
+                cache_arg+=(-e "${name}=${parts[1]}/${paths[$i]}")
+                i=$((i + 1))
+            done
+
+            shift 2
+            ;;
+        *)
+            if [[ $# -eq 1 ]]; then
+                image="$1"
+            else
+                docker_args+=("$1")
+            fi
+            shift
+            ;;
+    esac
+done
+
+if [ "${#cache_arg[@]}" -eq 0 ]; then
+    docker run "${docker_args[@]}" "$image"
+else
+    docker run "${docker_args[@]}" "${volume_arg[@]}" "${cache_arg[@]}" "$image"
+fi
+
+
+
+
+## run with single CACHE 
+# while [[ $# -gt 0 ]]; do
+#     case "$1" in
+#         --cache)
+#             echo "'${2}'"
+#             volume_arg="${2}"
+#             IFS=":"
+#             read -ra parts <<< "${2}"
+#             cache_arg="CACHE=${parts[0]}"
+#             shift 2
+#             ;;
+#         *)
+#             if [[ $# -eq 1 ]]; then
+#                 image="$1"
+#             else
+#                 docker_args+=("$1")
+#             fi
+#             shift
+#             ;;
+#     esac
+# done
+# # echo "${docker_args[@]}"
+# # echo "$cache_arg"
+# # echo "$volume_arg"
+# # echo "$image"
+# # echo docker run "${docker_args[@]}" -e "$cache_arg" -v "$volume_arg" "$image"
+
+# docker run "${docker_args[@]}" -e "$cache_arg" -v "$volume_arg" "$image"
+
+# python
+# import os
+# names=('XDG_CACHE_HOME', 'TORCH_HOME', 'TORCH_EXTENSIONS_DIR', 'DNNLIB_CACHE_DIR', 'HUGGINGFACE_HOME')
+# for e in names:
+#    print (e, os.getenv(e))
+
