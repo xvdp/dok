@@ -12,6 +12,8 @@
 ## run jupyter (in above cmd line - or from another docker console) 
 # docker exec -it wue0 jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778
 
+
+
 BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 ROOT=~/work/gits/Diffusion
 WEIGHTS_ROOT=~/weights
@@ -25,20 +27,7 @@ r) ROOT=${OPTARG};;         # project root for local installs
 w) WEIGHTS_ROOT=${OPTARG};; # weights root: download 
 esac; done
 
-ASSERT_DIR () {
-  if [ ! -d "${1}" ]; then
-    echo "FOLDER ${1} not found"
-    exit
-  fi
-}
-
-ASSERT_FILE () {
-  if [ ! -f "${1}" ]; then
-    echo "FILE ${1} not found"
-    exit
-  fi
-}
-
+source ../asserts.sh
 ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
 MAINTAINER="xvdp"

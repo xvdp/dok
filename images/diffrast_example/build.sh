@@ -59,10 +59,8 @@ fi
 [ -z $PROJECTS ] && PROJECTS=("${PROJECTS_LOCAL[@]}");
 [ -z $GITS ] && GITS=("${GITS_LOCAL[@]}");
 
-if [ ! -d "${ROOT}" ]; then
-  echo pass valid -r ROOT kwarg where projects and local gits are stored
-  exit
-fi
+source ../asserts.sh
+ASSERT_DIR "${ROOT}"
 
 # local projects installation # must match Dockerfile ADD instructions
 # clone gits to ROOT and include as project
@@ -98,7 +96,6 @@ NAME=$MAINTAINER"/"$NAME"_`basename ${PWD}`:$TAG" # add parent folder name _shh
 
 echo BASE_IMAGE=$BASEIMAGE
 echo "NAME="$NAME
-
 
 docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
 

@@ -44,10 +44,9 @@ fi
 [ -z $NAME ] && NAME=$BASEIMAGE;
 [ -z $GITS ] && GITS=("${GITS_LOCAL[@]}");
 
-if [ ! -d "${ROOT}" ]; then
-  echo pass valid -r ROOT kwarg where projects and local gits are stored
-  exit
-fi
+source ../asserts.sh
+ASSERT_DIR "${ROOT}"
+
 
 PROJECTS=()
 cd ${ROOT}

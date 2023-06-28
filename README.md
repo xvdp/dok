@@ -1,11 +1,11 @@
 # dok
-## Nested Dockerfile for remote multiuser development
+## Nested Dockerfile for remote multiuser development - for machine learning based on pytorch
 
 This project is a stack of Docker image shells for multiuser development. OS and cuda are passed as baseimage at build time. Adding or replacing projects is modular. 
 
 Notes:
 * follow installation instructions for docker
-* for deployment a ligher image with exact control of versions is preferred.
+* for deployment a ligher image with exact control of versions is preferred - 'torch' image is large, any image built after it will also be large.
 
 
 ```
@@ -43,6 +43,7 @@ If ssh authorized_keys changes, the entire stack needs to be rebuilt.
 
 ---
 ## images/ssh
+Base to other images, creates users and ssh access
 
 `./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04`
 
@@ -74,6 +75,7 @@ Should be built before any docker image that requires `$HOME`
 ...
 ## images/mamba
 `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh`
+Adds mamba/conda -- used by all subsequent projects
 
 creates: `xvdp/cuda1180-ubuntu2204_ssh_mamba:latest`
 
@@ -87,11 +89,15 @@ optional
 
 Adds mamba installation on /opt/conda and gives all users write permissions.
 
-**TODO** save mamba to local cache, for robustness
-
 ...
 ## images/torch
 `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba`
+Main workhorse, collection of  general conda/pip libraries required for pytorch based machine learning projects. As new projects are added, this file is updated to include new requirements, includes:
+* pytorch, torchvision, torchaudio, numpy, ffmpeg, sckit &  other standard vision libs
+* nvdiffrast, drjit differential rendering packages
+* huggingface diffusers, transformers
+* jupyter: contains an alias to run jupyter to port exposed in image/ssh: `jupy` enabling remote jupyter deployment
+* **warning: this image is too heavy for deployment, build slim image without every library**
 
 creates: `xvdp/cuda1180-ubuntu2204_ssh_mamba_torch:latest`
 
@@ -119,7 +125,7 @@ It can also be started in bash and attached from a differetn console to jupyter,
 
 ...
 ## images/diffuse
-Diffusion playground
+Diffusion playground. Incipient, only 2 recent projects added.
 
 * Pernias, Rampas, Aubrevile 2023 [Würstchen: Efficient Pretraining of Text-to-Image Models](https://arxiv.org/pdf/2306.00637.pdf)
 
@@ -129,6 +135,12 @@ fork -> https://github.com/xvdp/wuerstchen/tree/xdev
 fork -> https://github.com/xvdp/IADB
 
 `docker run --user 1000 --name d --gpus device=0 --cpuset-cpus="28-41" -v /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -v /mnt/Data/results:/home/results --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffuse`
+
+...
+## images/kaolin
+Todo: description add nerf models
+## images/stylegan3
+Todo: description, add other GAN standard models
 
 ...
 ## images/diffrast_example  # TODO replace: project with different example, nvdiffrast has been included in torch image above
@@ -165,7 +177,23 @@ This repository does not provide a general solution. We tested three approaches 
 ---
 
 ## run reference
+added a command  ` ./dockerrun <args>  `
+ similar to ` docker run <args>  ` with extra arg `--cache` which maps to env and volume: -e and -v with the purpose of replacing ~/.cache with a mounted volume for selected env variables.
+ Modify `names` and `paths` inside script. <br>`names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME)`<br>
+ Example:
+
+` ./dockerrun --user 1000 --name torch --gpus device=0 --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch`
+
+calls command
+
+` docker run --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 --network=host -it --rm -v /mnt/Data/weights:/home/weights -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface xvdp/cuda1180-ubuntu2204_ssh_mamba_torch `
+
+
+
+
 https://docs.docker.com/engine/reference/commandline/run/  `docker run`
+
+adds a command
 
 * `--user=1000 ` as user 1000  
 * `--user=$(id -u):$(getent group docker | cut -d: -f3)` as current user on docker group

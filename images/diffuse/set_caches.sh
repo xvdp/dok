@@ -19,8 +19,8 @@ cp "$bashrc_path" "$bashrc_backup"
 
 
 i=0
-names=(HUGGINGFACE_HOME TORCH_HOME XDG_CACHE_HOME)
-paths=("${cache_path}/huggingface" "${cache_path}/torch" $cache_path)
+names=(XDG_CACHE_HOME TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME)
+paths=($cache_path "${cache_path}/torch" "${cache_path}/torch_extensions" "${cache_path}/dnnlib" "${cache_path}/huggingface")
 # defaults=(~/.cache/huggingface/ ~/.cache/torch/ ~/.cache)
 
 for name in "${names[@]}"; do
