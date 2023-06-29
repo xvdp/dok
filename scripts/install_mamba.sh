@@ -7,7 +7,7 @@ VERSION=latest/download/${MAMBA_NAME}
 CONDA_DIR=/opt/conda
 export PATH=${CONDA_DIR}/bin:${PATH}
 
-sudo apt-get update > apt-get install --no-install-recommends --yes wget bzip2 ca-certificates git tini 
+sudo apt-get update && apt-get install --no-install-recommends --yes wget bzip2 ca-certificates git tini 
 #* sudo apt-get clean && rm -rf /var/lib/apt/lists/*
 
 wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/${VERSION}-$(uname)-$(uname -m).sh -O /tmp/mamba.sh
