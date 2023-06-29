@@ -24,5 +24,5 @@ echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> /etc/skel
 echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc
 
 # add all users permission to install on conda
-RUN chmod -R 777 $CONDA_DIR && mamba init
+sudo chmod -R 777 $CONDA_DIR && mamba init
 # reopen shell
