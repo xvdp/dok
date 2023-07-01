@@ -1,7 +1,7 @@
 # dok
-## Nested Dockerfile for remote multiuser development - for machine learning based on pytorch
+## Nested Dockerfile for remote multiuser dev; projects are specific to torch & ML
 
-This project is a stack of Docker image shells for **remote ssh accessible multiuser development**. OS and cuda are passed as baseimage at build time.
+Stack of Docker image shells for **remote ssh accessible multiuser development**. OS and cuda are passed as baseimage at build time.
 
 Every image takes in a baseimage arg to enable rebuilding and testing projects on new code easily.
 ```
@@ -11,9 +11,9 @@ FROM=${baseimage}
 Designed to be modular with nested images.
 ```
 nvidia/cuda:11.8.0-devel-ubuntu22.04
-    ssh                     base to dev projects (ssh, expose ports, adds users, .bashrc) if ssh authorized_keys change, rebuild stack.
+    ssh                     auth. base (ssh, ports, users, .bashrc) rebuild stack on authorized_keys change
         mamba
-            torch           base to torch projects (torch 2, nvdiffrast, drjit, huggingface transformers, diffusion, jupyter)
+            torch           torch base (torch 2, nvdiffrast, drjit, transformers, diffusion, jupyter)
                 diffuse:    diffusion sandbox wip ( iadb wuerstchen )
                 lang:       language  sandbox wip ( whisper llama )
 ```
@@ -28,9 +28,13 @@ Projects, subfolders of `./images/` contain: ` Dockerfile & build.sh`.
 The `--cache` argument exports common `os.environ[keys]`, e.g. `TORCH_HOME`, `HUGGINGFACE_HOME` &c., mapping to a shared volume to prevent repeated downloads while cutting verbosity. e.g.
 
 ```bash
-dockerrun --user 1000 -it --rm --cache \mnt\MyDrive\weights:\home\weights <dockerimage>
+SHR=\mnt\MyDrive\weights
+VOL=\home\weights
+IMG=<maintainer\dockerimage:tag>
+dockerrun --user 1000 -it --rm --cache $SHR:$VOL $IMG
 # expands to
-docker run --user 1000 -it --rm -v \mnt\MyDrive\weights:\home\weights -e HUGGINGFACE_HOME=\home\weights\huggingface -e TORCH_HOME=\home\weights\torch [... &c] <dockerimage>
+docker run --user 1000 -it --rm -v $SHR:$VOLs -e HUGGINGFACE_HOME="${VOL}\huggingface" /
+      -e TORCH_HOME="${VOL}\torch" [-e ... &c] $IMG
 ```
 
 ## Notes | Caveats
