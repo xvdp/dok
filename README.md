@@ -1,49 +1,52 @@
 # dok
 ## Nested Dockerfile for remote multiuser development - for machine learning based on pytorch
 
-This project is a stack of Docker image shells for multiuser development. OS and cuda are passed as baseimage at build time. Adding or replacing projects is modular. 
+This project is a stack of Docker image shells for **remote ssh accessible multiuser development**. OS and cuda are passed as baseimage at build time.
 
-Notes:
-* follow installation instructions for docker
-* for deployment a ligher image with exact control of versions is preferred - 'torch' image is large, any image built after it will also be large.
-
-
+Every image takes in a baseimage arg to enable rebuilding and testing projects on new code easily.
 ```
 ARG baseimage
 FROM=${baseimage}
 ```
-All Dockerfiles are built to be nested. For instance
+Designed to be modular with nested images.
 ```
 nvidia/cuda:11.8.0-devel-ubuntu22.04
-    ssh
+    ssh                     base to dev projects (ssh, expose ports, adds users, .bashrc) if ssh authorized_keys change, rebuild stack.
         mamba
-            torch
-                other ...
+            torch           base to torch projects (torch 2, nvdiffrast, drjit, huggingface transformers, diffusion, jupyter)
+                diffuse:    diffusion sandbox wip ( iadb wuerstchen )
+                lang:       language  sandbox wip ( whisper llama )
 ```
-Every folder under `.images/` contains files: `Dockerfile, build.sh`. For convenience `images/buildall.sh` files can be added to rebuild entire stack. 
+Projects, subfolders of `./images/` contain: ` Dockerfile & build.sh`.
 
-When the `Dockerfile` requires external data for `ADD` or `COPY`, `build.sh` picks a location. Temporarily copies them into the `image\<name>` folder context to embeds into the image.  
+`./build.sh` clones to local, copies to context, removes from context. Could be simplified if hardoded
 
-## images
-1. ssh: built over OS and graphic driverrs, defines users incorporates shh authorized_keys in folder, adds .bashrc, exposes port and adds to `/etc/ssh/sshd_config`. Based on https://gist.github.com/mlamarre/a3ac761bb2e47162b73e72ac7d5cc395.
-2. mamba: Nested mamba image based on https://github.com/conda-forge/miniforge-images/blob/master/ubuntu/Dockerfile.
-3. torch: adds pytorch and mitsuba dev # requires correct cuda context.
-4. other projects, internal or github (eg. nvdiffrast) any project built on top of the the stack.
+`./images/buildall.sh` rebuilds all images.
 
-If ssh authorized_keys changes, the entire stack needs to be rebuilt.
+`./dockerrun <args> --cache <shared vol>:<mounted vol>` Swap for `docker run` accepting all itsarguments.
 
-**Notes /Caveats:**
-* Build scripts are more complicated than needed, with known environments options can be hardcoded into a couple bash lines.
-* The mamba/ conda is designed to run on (base) environment. With persistent multiuser containers one probably outght to run named envs.
-* If the `docker context` is a remote server, `docker build` command processes the image context locally and creates the image in the server.
+The `--cache` argument exports common `os.environ[keys]`, e.g. `TORCH_HOME`, `HUGGINGFACE_HOME` &c., mapping to a shared volume to prevent repeated downloads while cutting verbosity. e.g.
+
+```bash
+dockerrun --user 1000 -it --rm --cache \mnt\MyDrive\weights:\home\weights <dockerimage>
+# expands to
+docker run --user 1000 -it --rm -v \mnt\MyDrive\weights:\home\weights -e HUGGINGFACE_HOME=\home\weights\huggingface -e TORCH_HOME=\home\weights\torch [... &c] <dockerimage>
+```
+
+## Notes | Caveats
+
+* install docker first
+* lighter Dockerfiles with are recommended for deployment; - **'torch' image is very large**.
 
 ## TODO
-* detail remote vscode/jupyter development.
-* validate caching --no-cache on local projects
+* detail remote vscode development
+* enable remote graphical interface, X11 forwarding thru ssh
 
 ---
-## images/ssh
-Base to other images, creates users and ssh access
+# base images
+
+## ./images/ssh
+Base to other images, creates users and ssh access. Bilt over OS and graphic driverrs, defines users incorporates shh authorized_keys in folder, adds .bashrc, exposes port and adds to `/etc/ssh/sshd_config`. Based on https://gist.github.com/mlamarre/a3ac761bb2e47162b73e72ac7d5cc395.
 
 `./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04`
 
@@ -72,8 +75,10 @@ Generates a `<mantainer>/<name>_shh:<tag>`
 
 Should be built before any docker image that requires `$HOME`
 
-...
-## images/mamba
+---
+## ./images/mamba
+Nested mamba image based on https://github.com/conda-forge/miniforge-images/blob/master/ubuntu/Dockerfile. Images are built on (base) env.
+
 `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh`
 Adds mamba/conda -- used by all subsequent projects
 
@@ -89,8 +94,8 @@ optional
 
 Adds mamba installation on /opt/conda and gives all users write permissions.
 
-...
-## images/torch
+---
+## ./images/torch
 `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba`
 Main workhorse, collection of  general conda/pip libraries required for pytorch based machine learning projects. As new projects are added, this file is updated to include new requirements, includes:
 * pytorch, torchvision, torchaudio, numpy, ffmpeg, sckit &  other standard vision libs
@@ -123,8 +128,10 @@ It can also be started in bash and attached from a differetn console to jupyter,
 
  `jupyter docker exec -it torchcontainer jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778`
 
-...
-## images/diffuse
+---
+# sandbox images
+
+## ./images/diffuse
 Diffusion playground. Incipient, only 2 recent projects added.
 
 * Pernias, Rampas, Aubrevile 2023 [Würstchen: Efficient Pretraining of Text-to-Image Models](https://arxiv.org/pdf/2306.00637.pdf)
@@ -136,48 +143,36 @@ fork -> https://github.com/xvdp/IADB
 
 `docker run --user 1000 --name d --gpus device=0 --cpuset-cpus="28-41" -v /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -v /mnt/Data/results:/home/results --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffuse`
 
-...
-## images/kaolin
+---
+## ./images/lang
+Language models playground
+
+### whisper
+Radford [Robust Speech Recognition via Large-Scale Weak Supervision](https://docs.google.com/document/d/1oiOcXcCM1rrx64EFAU03KUMkvlMW0hTANpkkOwCxJUQ/edit). Project and weights opensourced at https://github.com/openai/whisper
+
+Build and run e.g.`   whisper myaudio.wav --model medium -o ~/results/whisper -f "srt"`.
+
+For full set of args look at project README and code https://github.com/openai/whisper/blob/main/whisper/transcribe.py
+
+### llama
+Touvron 2023 [LLaMA Open and Efficient Foundation Language Models](https://arxiv.org/pdf/2302.13971.pdf). Weights must be requested from https://github.com/facebookresearch/llama
+
+---
+## ./images/kaolin
 Todo: description add nerf models
-## images/stylegan3
+
+---
+## ./images/stylegan3
 Todo: description, add other GAN standard models
 
-...
-## images/diffrast_example  # TODO replace: project with different example, nvdiffrast has been included in torch image above
-Example file how to add local projects.
 
-1. choose a pip installbable project eg. `cd git <projects_parent> clone https://github.com/NVlabs/nvdiffrast `
-2. `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -i nvdiffrast -r <projects_parent>`. 
-This could be used for any local project; the build.sh script, copies the project to the Dockerfile context then cleans it up. Adding or changing the project requires the Dockerfile to be modified as well.
 
-The build sript can also clone and keep a local cache of the project. Alternatively one could clone and install every time from repository which may be more suitable in some cases.
 
-3. `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -g NVlabs/nvdiffrast -r <projects_parent>`.
-
-Note. Notice that the `docker build` in build.sh is run with `--no-cache` option. This ensures that local changes to projects are propagated into the image. While the build cache is important when downloading data from cloud which could require multiple GB of data to be transferred, it is less onerous with local data. The --no-cache flags should be avoided when possible in images which are base to other images.
-
-generates -> `xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_diffrast_example:latest`
-
-requires
-* `-b baseimage   `  e.g. xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
-* `-r <projects_parent>` as written `build.sh` requires every project to be inside same folder.
-* `-i "${ar[*]}" or <myproject>` e.g. `ar=(nvdiffrast, <myproject>)` every project requires an `ADD <myproject>` to the Dockerfile
-* `-g "${ar[*]}" or <gitproject>` e.g. `ar=(NVlabs/nvdiffrast, <gituser>/<gitproject>)` every project requires an `ADD <gitproject>` to the Dockerfile
 
 ---
+# run reference
+` ./dockerrun <args>  `
 
-## TODO regarding weights and data for git and local projects:
-Many projects require data files or files with weigths, too large to be stored on github. These files may be distributed in many forms: github large file storage, google drives, model zoos and hubs, huggingface, etc. 
-
-This repository does not provide a general solution. We tested three approaches for storing large data:
-* son the machine where the docker images are built and copying it with the project.
-* on a server drive and mounting in on docker run
-* on a docker volume.
-
----
-
-## run reference
-added a command  ` ./dockerrun <args>  `
  similar to ` docker run <args>  ` with extra arg `--cache` which maps to env and volume: -e and -v with the purpose of replacing ~/.cache with a mounted volume for selected env variables.
  Modify `names` and `paths` inside script. <br>`names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME)`<br>
  Example:

@@ -4,7 +4,7 @@
 ROOT=~/work/gits/NeuralRepresentations
 WEIGHTS_ROOT=~/weights
 
-source ../asserts.sh
+source ../utils.sh
 ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
 
@@ -28,15 +28,7 @@ ASSERT_DIR "${name}"
 
 # cp /home/z/weights/RingNet/
 
-NAME=`echo $BASEIMAGE | cut -d "/" -f 2`   # remove maintainer prefix
-NAME=`echo "${NAME//:/$''}"`         # remove ( : . devel- latest )
-NAME=`echo "${NAME//./$''}"`         # remove invalid chars in name ':'
-NAME=`echo "${NAME//devel-/$''}"`         
-NAME=`echo "${NAME//latest/$''}"`   
-NAME=$MAINTAINER"/"$NAME"_`basename ${PWD}`:$TAG" # add parent folder name _shh
-
-# echo BASE_IMAGE=$BASEIMAGE
-# echo "NAME=$NAME
+NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
 
 docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER --no-cache -t $NAME .
 

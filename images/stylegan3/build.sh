@@ -39,13 +39,7 @@ cd -
 cp -rf "${proj}" .
 ASSERT_DIR "${name}" 
 
-NAME=`echo $BASEIMAGE | cut -d "/" -f 2`   # remove maintainer prefix
-NAME=`echo "${NAME//:/$''}"`         # remove ( : . devel- latest )
-NAME=`echo "${NAME//./$''}"`         # remove invalid chars in name ':'
-NAME=`echo "${NAME//devel-/$''}"`         
-NAME=`echo "${NAME//latest/$''}"`   
-NAME=$MAINTAINER"/"$NAME"_`basename ${PWD}`:$TAG" # add parent folder name _shh
-
+NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
 docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
 
 # cleanup local
