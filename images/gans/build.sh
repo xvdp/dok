@@ -7,11 +7,11 @@
 #   call stylegan3/set_cache_dirs.set_envs(<path to mounted vol>) on scripts.
 # default mounted vol /home/weights
 # example
-# ./dockerrun --user 1000 --name torch --gpus all --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -v /mnt/Data/results:/home/results --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_stylegan3
+# ./dockerglrun --user 1000 --name torch --gpus all --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -v /mnt/Data/results:/home/results --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
 
 
 # 2.
-# python visualize.py requires forwarding -X but none of the crap i tried seems to work
+# python stylegan3/visualize.py requires forwarding xauthority, run with dockerglrun
 
 
 ROOT=~/work/gits/GANs
