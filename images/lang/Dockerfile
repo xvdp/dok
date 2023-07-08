@@ -14,8 +14,9 @@ SHELL ["/bin/bash", "-c"]
 USER appuser
 ADD --chown=appuser:appuser llama llama
 ADD --chown=appuser:appuser whisper whisper
+ADD --chown=appuser:appuser newspaper newspaper
 
 RUN pip install --no-cache-dir fairscale fire sentencepiece tiktoken==0.3.3 \
-    &&  ip install --no-cache-dir whisper/. && rm -rf whisper
+    whisper/. llama/. newspaper/. && rm -rf whisper newspaper
 
 CMD ["/bin/bash" ]

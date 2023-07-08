@@ -20,7 +20,7 @@ BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 MAINTAINER="xvdp"
 TAG="latest"
 
-source ../asserts.sh
+source ../utils.sh
 ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
 

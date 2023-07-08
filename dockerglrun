@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# `./dockerglrun <args>`
+# identical to `docker run` with extra arg `--cache` which maps to env and volume: -e and -v
+# to names and paths, with the purpose of replacing ~/.cache with a mounted volume for selected env variables
+# sharing xauth and display between host and client
+
+names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME)
+paths=("torch" "torch_extensions" "dnnlib" "huggingface")
+
+# example 
+
+# ./dockerglrun --user 1000 --name torch --gpus device=0 --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gan
+# runs
+# docker run --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 --network=host -it --rm -v /mnt/Data/weights:/home/weights \
+# -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface \
+# -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw -e XAUTHORITY=/tmp/.docker.xauth -v /dev:/dev \
+# xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gan
+
+docker_args=()
+cache_arg=()
+volume_arg=()
+image=""
+
+if docker context ls | grep "*" | grep -q "ssh"; then
+    # is not local
+    ADD=$(docker context ls | grep "*" | cut -d '/' -f 3 | sed 's/[[:blank:]]*$//')
+    CTX=$(docker context ls | grep "*" | cut -d '@' -f 2 | sed 's/[[:blank:]]*$//')
+    ssh -X $ADD -T 'touch /tmp/.docker.xauth && xauth nlist $DISPLAY | sed -e "s/^..../ffff/" | xauth -f /tmp/.docker.xauth nmerge -'
+    disp="${CTX}:11"
+
+else
+    touch /tmp/.docker.xauth && xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f /tmp/.docker.xauth nmerge -
+    disp=unix$DISPLAY
+fi
+
+# touch /tmp/.docker.xauth && xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f /tmp/.docker.xauth nmerge -
+gl_args=(-e "DISPLAY=${disp}" -v /tmp/.X11-unix:/tmp/.X11-unix -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw -e XAUTHORITY=/tmp/.docker.xauth -v /dev:/dev)
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --cache)
+            volume_arg+=(-v "${2}")
+
+            IFS=":"
+            read -ra parts <<< "${2}"
+            cache_arg+=(-e "XDG_CACHE_HOME=${parts[1]}")
+            i=0
+            for name in "${names[@]}"; do
+                cache_arg+=(-e "${name}=${parts[1]}/${paths[$i]}")
+                i=$((i + 1))
+            done
+
+            shift 2
+            ;;
+        *)
+            if [[ $# -eq 1 ]]; then
+                image="$1"
+            else
+                docker_args+=("$1")
+            fi
+            shift
+            ;;
+    esac
+done
+
+if [ "${#cache_arg[@]}" -eq 0 ]; then
+    echo "docker run ${docker_args[@]} ${gl_args[@]} $image"
+    docker run "${docker_args[@]}" "${gl_args[@]}" "$image"
+else
+    echo "docker run ${docker_args[@]} ${gl_args[@]} ${volume_arg[@]} ${cache_arg[@]} $image"
+    docker run "${docker_args[@]}" "${gl_args[@]}" "${volume_arg[@]}" "${cache_arg[@]}" "$image"
+fi
+
+
+#./dockerglrun --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 -it --rm --cache /mnt/Data/weights:/home/weights xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+# docker run --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 -v /mnt/Data/data:/home/data --network=host -it --rm -e DISPLAY=unix:0 -v /tmp/.X11-unix:/tmp/.X11-unix -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw -e XAUTHORITY=/tmp/.docker.xauth -v /dev:/dev -v /mnt/Data/weights:/home/weights -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+
+# ./dockerglrun --user 1000 --name torch --gpus all -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+# docker run --user 1000 --name torch --gpus all -it --rm -e DISPLAY=unix:0 -v /tmp/.X11-unix:/tmp/.X11-unix -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw -e XAUTHORITY=/tmp/.docker.xauth -v /dev:/dev xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+
+

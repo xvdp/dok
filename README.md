@@ -17,6 +17,7 @@ nvidia/cuda:11.8.0-devel-ubuntu22.04
                 diffuse:    diffusion sandbox wip ( iadb wuerstchen )
                 lang:       language  sandbox wip ( whisper llama )
 ```
+### Scripts
 Projects, subfolders of `./images/` contain: ` Dockerfile & build.sh`.
 
 `./build.sh` clones to local, copies to context, removes from context. Could be simplified if hardoded
@@ -24,6 +25,9 @@ Projects, subfolders of `./images/` contain: ` Dockerfile & build.sh`.
 `./images/buildall.sh` rebuilds all images.
 
 `./dockerrun <args> --cache <shared vol>:<mounted vol>` Swap for `docker run` accepting all itsarguments.
+
+`./dockerglrun <args> --cache <shared vol>:<mounted vol>` Like `dockerun` transfering .X11 for gl dependent projects, eg gans.
+
 
 The `--cache` argument exports common `os.environ[keys]`, e.g. `TORCH_HOME`, `HUGGINGFACE_HOME` &c., mapping to a shared volume to prevent repeated downloads while cutting verbosity. e.g.
 
@@ -151,6 +155,9 @@ fork -> https://github.com/xvdp/IADB
 ## ./images/lang
 Language models playground
 
+`dockerrun --user 1000 --name lang --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -v /mnt/Data/results:/home/results --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_lang`
+
+
 ### whisper
 Radford [Robust Speech Recognition via Large-Scale Weak Supervision](https://docs.google.com/document/d/1oiOcXcCM1rrx64EFAU03KUMkvlMW0hTANpkkOwCxJUQ/edit). Project and weights opensourced at https://github.com/openai/whisper
 
@@ -160,6 +167,16 @@ For full set of args look at project README and code https://github.com/openai/w
 
 ### llama
 Touvron 2023 [LLaMA Open and Efficient Foundation Language Models](https://arxiv.org/pdf/2302.13971.pdf). Weights must be requested from https://github.com/facebookresearch/llama
+
+``` bash
+# from llama readme
+WTS=/home/weights/llama
+model=(7B 13B 33B 65B)
+nproc=(1 2 4 8)
+i=0
+torchrun --nproc_per_node "${nproc[$i]}" example.py --ckpt_dir "${WTS}/${model[$i]}" --tokenizer_path "${WTS}/tokenizer.model" 
+```
+* model 7B: 24GB
 
 ---
 ## ./images/kaolin

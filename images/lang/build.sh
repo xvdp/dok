@@ -2,7 +2,7 @@
 # language
 
 ## build atop of base image
-# ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+# ./build.s
 
 
 
@@ -11,8 +11,8 @@
 
 
 # projects
-PROJECTS=(to_text/whisper llama)
-GITS=(openai/whisper facebookresearch/llama)
+PROJECTS=(to_text/whisper llama newspaper)
+GITS=(openai/whisper facebookresearch/llama codelucas/newspaper)
 
 BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 MAINTAINER="xvdp"
