@@ -2,7 +2,10 @@
 # intended to be built on top of ../torch/Dockerfile
 # similar to https://github.com/xvdp/stylegan3/blob/main/Dockerfile
 # to run visualizer.py start with 
-#../dockerglrun --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 -it --rm --cache /mnt/Data/weights:/home/weights xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+#../dockerglrun --user 1000 --name torch --gpus device=0 --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+
+# gl uis is currently only enabled if docker context is default, ie. local host.
+#../dockerrun --user 1000 --name torch --gpus device=0 --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data --network=host  -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
 
 
 ARG baseimage

@@ -14,8 +14,9 @@ nvidia/cuda:11.8.0-devel-ubuntu22.04
     ssh                     auth. base (ssh, ports, users, .bashrc) rebuild stack on authorized_keys change
         mamba
             torch           torch base (torch 2, nvdiffrast, drjit, transformers, diffusion, jupyter)
-                diffuse:    diffusion sandbox wip ( iadb wuerstchen )
+                diffuse:    Diffusion sandbox wip ( iadb wuerstchen )
                 lang:       language  sandbox wip ( whisper llama )
+                gans:       GAN sandbox wip ( stylegan3 )
 ```
 ### Scripts
 Projects, subfolders of `./images/` contain: ` Dockerfile & build.sh`.
@@ -24,12 +25,11 @@ Projects, subfolders of `./images/` contain: ` Dockerfile & build.sh`.
 
 `./images/buildall.sh` rebuilds all images.
 
-`./dockerrun <args> --cache <shared vol>:<mounted vol>` Swap for `docker run` accepting all itsarguments.
+`./dockerrun <args> --cache <shared vol>:<mounted vol>` Like `docker run` with extra arg `--cache`
 
-`./dockerglrun <args> --cache <shared vol>:<mounted vol>` Like `dockerun` transfering .X11 for gl dependent projects, eg gans.
+`./dockerglrun <args> --cache <shared vol>:<mounted vol>` Like `./dockerrun` for local .Xauth mapping for gl dependent projects, e.g. `_gans`
 
-
-The `--cache` argument exports common `os.environ[keys]`, e.g. `TORCH_HOME`, `HUGGINGFACE_HOME` &c., mapping to a shared volume to prevent repeated downloads while cutting verbosity. e.g.
+The `--cache` argument exports common `os.environ[keys]`, e.g. `TORCH_HOME`, `HUGGINGFACE_HOME` &c., mapping to a shared volume to prevent repeated downloads while cutting verbosity. e.g. See **run reference**.
 
 ```bash
 SHR=\mnt\MyDrive\weights
@@ -178,21 +178,24 @@ torchrun --nproc_per_node "${nproc[$i]}" example.py --ckpt_dir "${WTS}/${model[$
 ```
 * model 7B: 24GB
 
+
+---
+## ./images/gans
+
+* Karras et al 21 [Alias-Free Generative Adversarial Networks](https://arxiv.org/pdf/2106.12423.pdf)
+Adapted from stylegan3 https://github.com/xvdp/stylegan3 Dockerfile. Can be run locally with GL visualiztion: example
+
+`./dockerglrun --user 1000 --name torch --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans`
+
 ---
 ## ./images/kaolin
 Todo: description add nerf models
-
----
-## ./images/stylegan3
-Todo: description, add other GAN standard models
-
-
 
 
 
 ---
 # run reference
-` ./dockerrun <args>  `
+**` ./dockerrun <args>  `**
 
  similar to ` docker run <args>  ` with extra arg `--cache` which maps to env and volume: -e and -v with the purpose of replacing ~/.cache with a mounted volume for selected env variables.
  Modify `names` and `paths` inside script. <br>`names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME)`<br>
@@ -204,6 +207,16 @@ calls command
 
 ` docker run --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 --network=host -it --rm -v /mnt/Data/weights:/home/weights -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface xvdp/cuda1180-ubuntu2204_ssh_mamba_torch `
 
+**` ./dockerglrun <args> `**
+
+similar to `.dockerrun` transferring .xauthority and $DISPLAY, only enabled for docker using locally.
+Example:
+
+`./dockerglrun --user 1000 --name torch --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans`
+
+calls command
+
+`docker run --user 1000 --name torch --gpus all -v /mnt/Data/data:/home/data --network=host -it --rm -e DISPLAY=unix:0 -v /tmp/.X11-unix:/tmp/.X11-unix -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw -e XAUTHORITY=/tmp/.docker.xauth -v /dev:/dev -v /mnt/Data/weights:/home/weights -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans`
 
 
 

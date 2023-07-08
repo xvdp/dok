@@ -22,6 +22,8 @@ cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04 -r $AUTH_ROOT
 cd ../mamba && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh
 cd ../torch && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba -r $PROJ_ROOT
 # cd ../diffuse && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -r "${PROJ_ROOT}/Diffusion"
+# cd ../lang && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -r "${PROJ_ROOT}/Language"
+# cd ../gans && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -r "${PROJ_ROOT}/GANs"
 
 # TODO deprecate - diffrast has been added to torch image
 # cd ../diffrast_example && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -g  NVlabs/nvdiffrast -r $PROJ_ROOT
