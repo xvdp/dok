@@ -4,23 +4,31 @@
 ## build atop of base image
 # ./build.s
 
-
-
 ## run  with dok/dockerrun
 # dockerrun --user 1000 --name lang --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_lang
 
-
 # projects
-PROJECTS=(to_text/whisper llama newspaper)
-GITS=(openai/whisper facebookresearch/llama codelucas/newspaper)
+PROJECTS=(to_text/whisper llama newspaper stanford_alpaca)
+GITS=(openai/whisper facebookresearch/llama codelucas/newspaper tatsu-lab/stanford_alpaca)
 
-BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
-MAINTAINER="xvdp"
-TAG="latest"
+
+# optional args
+while getopts b:m:t:r:w: option; do case ${option} in
+b) BASEIMAGE=${OPTARG};;
+m) MAINTAINER=${OPTARG};;
+t) TAG=${OPTARG};;
+r) ROOT=${OPTARG};;
+w) WEIGHTS_ROOT=${OPTARG};;
+esac; done
+
+# defaults
+BASEIMAGE=${BASEIMAGE:-xvdp/cuda1180-ubuntu2204_ssh_mamba_torch}
+MAINTAINER=${MAINTAINER:-xvdp}
+TAG=${TAG:-latest}
 
 # local roots
-ROOT=~/work/gits/Language
-WEIGHTS_ROOT=~/weights
+ROOT=${ROOT:-~/work/gits/Language} # home for projects
+WEIGHTS_ROOT=${WEIGHTS_ROOT:-~/weights} # home for weights
 source ../utils.sh
 ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
@@ -33,14 +41,18 @@ i=0
 for proj in "${PROJECTS[@]}"; do
     path="${ROOT}/${proj}"
     parent_dir=$(dirname $path)
+    echo "\nprogect ${proj}"
+    echo "git ${GITS[$i]}"
+    echo "parent_dir ${parent_dir}"
+    echo "path: ${path}"
     mkdir -p $parent_dir && cd $parent_dir
 
     if [ ! -d $path ]; then
-        echo "   cloning:  ${GITROOT}/${GITS[$i]}"
+        echo "   cloning:  ${GITROOT}/${GITS[$i]} to ${path}"
         git clone "${GITROOT}/${GITS[$i]}"
     fi
     cp -rf "${path}" "${HERE}"
-    i=${i+1}
+    ((i++))
 done
 cd $HERE
 

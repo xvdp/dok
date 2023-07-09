@@ -73,10 +73,10 @@ else
 fi
 
 
-#./dockerglrun --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 -it --rm --cache /mnt/Data/weights:/home/weights xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+#./dockerglrun --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 --network=host -it --rm --cache /mnt/Data/weights:/home/weights xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
 # docker run --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 -v /mnt/Data/data:/home/data --network=host -it --rm -e DISPLAY=unix:0 -v /tmp/.X11-unix:/tmp/.X11-unix -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw -e XAUTHORITY=/tmp/.docker.xauth -v /dev:/dev -v /mnt/Data/weights:/home/weights -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
 
-# ./dockerglrun --user 1000 --name torch --gpus all -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
-# docker run --user 1000 --name torch --gpus all -it --rm -e DISPLAY=unix:0 -v /tmp/.X11-unix:/tmp/.X11-unix -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw -e XAUTHORITY=/tmp/.docker.xauth -v /dev:/dev xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+# ./dockerglrun --user 1000 --name torch --gpus all --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
+# docker run --user 1000 --name torch --gpus all --network=host -it --rm -e DISPLAY=unix:0 -v /tmp/.X11-unix:/tmp/.X11-unix -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw -e XAUTHORITY=/tmp/.docker.xauth -v /dev:/dev xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans
 
 

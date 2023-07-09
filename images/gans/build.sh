@@ -13,12 +13,24 @@
 # 2.
 # python stylegan3/visualize.py requires forwarding xauthority, run with dockerglrun
 
+# optional args
+while getopts b:m:t:r:w: option; do case ${option} in
+b) BASEIMAGE=${OPTARG};;
+m) MAINTAINER=${OPTARG};;
+t) TAG=${OPTARG};;
+r) ROOT=${OPTARG};;
+w) WEIGHTS_ROOT=${OPTARG};;
+esac; done
 
-ROOT=~/work/gits/GANs
-WEIGHTS_ROOT=~/weights
-BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
-MAINTAINER="xvdp"
-TAG="latest"
+# defaults
+BASEIMAGE=${BASEIMAGE:-xvdp/cuda1180-ubuntu2204_ssh_mamba_torch}
+MAINTAINER=${MAINTAINER:-xvdp}
+TAG=${TAG:-latest}
+
+# local roots
+ROOT=${ROOT:-~/work/gits/GANs} # home for projects
+WEIGHTS_ROOT=${WEIGHTS_ROOT:-~/weights} # home for weights
+
 
 source ../utils.sh
 ASSERT_DIR "${ROOT}"

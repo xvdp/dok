@@ -15,6 +15,8 @@ USER appuser
 ADD --chown=appuser:appuser llama llama
 ADD --chown=appuser:appuser whisper whisper
 ADD --chown=appuser:appuser newspaper newspaper
+ADD --chown=appuser:appuser stanford_alpaca stanford_alpaca
+
 
 RUN pip install --no-cache-dir fairscale fire sentencepiece tiktoken==0.3.3 \
     whisper/. llama/. newspaper/. && rm -rf whisper newspaper
