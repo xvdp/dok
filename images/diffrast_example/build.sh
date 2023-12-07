@@ -26,10 +26,17 @@
 
 
 # personal defaults to overwrite or pass with -r ROOT -i "${localprojects[*]}" -g "${githubprojects[*]}" 
-ROOT_LOCAL=~/work/gits
-PROJECTS_LOCAL=()
-GITS_LOCAL=(NVlabs/nvdiffrast)
 
+PROJECTS_LOCAL=()
+
+
+# defaults
+source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
+source ../utils.sh      # provides ASSERT_DIR() MAKE_IMAGE_NAME()
+ROOT=$GIT_ROOT
+TAG="latest"
+
+GITS_LOCAL=(NVlabs/nvdiffrast)
 
 if [ $# -eq 0 ]
   then
@@ -51,15 +58,11 @@ if [ -z $BASEIMAGE ]; then
     echo "no base image supplied using arg $1"
     BASEIMAGE=$1
 fi
-# Defaults
-[ -z $ROOT ] && ROOT=$ROOT_LOCAL;
-[ -z $MAINTAINER ] && MAINTAINER="xvdp";
-[ -z $TAG ] && TAG="latest";
+
 [ -z $NAME ] && NAME=$BASEIMAGE;
 [ -z $PROJECTS ] && PROJECTS=("${PROJECTS_LOCAL[@]}");
 [ -z $GITS ] && GITS=("${GITS_LOCAL[@]}");
 
-source ../utils.sh
 ASSERT_DIR "${ROOT}"
 
 # local projects installation # must match Dockerfile ADD instructions

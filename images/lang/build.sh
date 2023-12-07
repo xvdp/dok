@@ -7,6 +7,15 @@
 ## run  with dok/dockerrun
 # dockerrun --user 1000 --name lang --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_lang
 
+
+
+# defaults
+source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
+source ../utils.sh
+ROOT="${GIT_ROOT}/Language}"
+TAG="latest"
+BASE_IMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch"
+
 # projects
 PROJECTS=(to_text/whisper llama newspaper stanford_alpaca)
 GITS=(openai/whisper facebookresearch/llama codelucas/newspaper tatsu-lab/stanford_alpaca)
@@ -21,17 +30,9 @@ r) ROOT=${OPTARG};;
 w) WEIGHTS_ROOT=${OPTARG};;
 esac; done
 
-# defaults
-BASEIMAGE=${BASEIMAGE:-xvdp/cuda1180-ubuntu2204_ssh_mamba_torch}
-MAINTAINER=${MAINTAINER:-xvdp}
-TAG=${TAG:-latest}
-
-# local roots
-ROOT=${ROOT:-~/work/gits/Language} # home for projects
-WEIGHTS_ROOT=${WEIGHTS_ROOT:-~/weights} # home for weights
-source ../utils.sh
 ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
+
 
 GITROOT=https://github.com
 

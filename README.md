@@ -19,15 +19,24 @@ nvidia/cuda:11.8.0-devel-ubuntu22.04
                 gans:       GAN sandbox wip ( stylegan3 )
 ```
 ### Scripts
+General.
+
+**`./config.sh`** **Defaults: User to Modify:  local folders and info.**
+
+`./images/buildall.sh` rebuilds all images.
+
+`./dockerrun <args> --cache <shared vol>:<mounted vol>` Similar to `docker run` with extra arg `--cache`
+
+`./dockerglrun <args> --cache <shared vol>:<mounted vol>` Similar to `./dockerrun` for local .Xauth mapping for gl dependent projects, e.g. `_gans`
+
+`./images/utils.sh` common bash utilities
+
+
 Projects, subfolders of `./images/` contain: ` Dockerfile & build.sh`.
 
 `./build.sh` clones to local, copies to context, removes from context. Could be simplified if hardoded
 
-`./images/buildall.sh` rebuilds all images.
 
-`./dockerrun <args> --cache <shared vol>:<mounted vol>` Like `docker run` with extra arg `--cache`
-
-`./dockerglrun <args> --cache <shared vol>:<mounted vol>` Like `./dockerrun` for local .Xauth mapping for gl dependent projects, e.g. `_gans`
 
 The `--cache` argument exports common `os.environ[keys]`, e.g. `TORCH_HOME`, `HUGGINGFACE_HOME` &c., mapping to a shared volume to prevent repeated downloads while cutting verbosity. e.g. See **run reference**.
 
@@ -176,7 +185,14 @@ nproc=(1 2 4 8)
 i=0
 torchrun --nproc_per_node "${nproc[$i]}" example.py --ckpt_dir "${WTS}/${model[$i]}" --tokenizer_path "${WTS}/tokenizer.model" 
 ```
-* model 7B: 24GB
+Training Requires 80G, inference 24GB. Models are sharded and require
+* 7B -  1GPU
+* 13B - 2GPUS
+* 33B - 4GPUS
+* 65B - 8GPUS
+
+### gpt
+GPT-J 6B 275B 1.3B 2.7B 6.7B 13B 33B
 
 
 ---
@@ -188,7 +204,11 @@ Adapted from stylegan3 https://github.com/xvdp/stylegan3 Dockerfile. Can be run 
 `./dockerglrun --user 1000 --name torch --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data -network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_gans`
 
 ---
-## ./images/kaolin
+## ./images/rf
+
+Randiance fields
+* kaolin
+* gaussian splatting
 Todo: description add nerf models
 
 

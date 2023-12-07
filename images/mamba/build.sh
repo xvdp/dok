@@ -12,6 +12,10 @@ if [ $# -eq 0 ]
     exit
 fi
 
+# defaults
+MAINTAINER="xvdp"
+TAG="latest"
+
 while getopts b:n:m:t: option; do case ${option} in
 b) BASEIMAGE=${OPTARG};;
 n) NAME=${OPTARG};;
@@ -23,8 +27,8 @@ if [ -z $BASEIMAGE ]; then
     echo "no base image supplied using arg $1"
     BASEIMAGE=$1
 fi
-[ -z $MAINTAINER ] && MAINTAINER="xvdp";
-[ -z $TAG ] && TAG="latest";
+# [ -z $MAINTAINER ] && MAINTAINER="xvdp";
+# [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
 
 source ../utils.sh

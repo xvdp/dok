@@ -22,13 +22,17 @@ if [ $# -eq 0 ]
     exit
 fi
 
-ROOT_LOCAL=~/work/gits
+source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
+source ../utils.sh
+
+ROOT=$GIT_ROOT
 GITS_LOCAL=(pytorch/vision NVlabs/nvdiffrast)
+TAG="latest"
 
 while getopts b:n:m:t:r:g: option; do case ${option} in
 b) BASEIMAGE=${OPTARG};;
 n) NAME=${OPTARG};;
-m) MAINTAINER=${OPTARG};;
+m) MAINTAINER=${OPTARG};; # preefined in confif
 t) TAG=${OPTARG};;
 r) ROOT=${OPTARG};;       # project root for local installs
 esac; done
@@ -38,13 +42,13 @@ if [ -z $BASEIMAGE ]; then
     BASEIMAGE=$1
 fi
 # Defaults
-[ -z $ROOT ] && ROOT=$ROOT_LOCAL;
-[ -z $MAINTAINER ] && MAINTAINER="xvdp";
-[ -z $TAG ] && TAG="latest";
+# [ -z $ROOT ] && ROOT=$ROOT_LOCAL;
+# [ -z $MAINTAINER ] && MAINTAINER="xvdp";
+# [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
 [ -z $GITS ] && GITS=("${GITS_LOCAL[@]}");
 
-source ../utils.sh
+
 ASSERT_DIR "${ROOT}"
 
 

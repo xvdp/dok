@@ -12,11 +12,15 @@
 ## run jupyter (in above cmd line - or from another docker console) 
 # docker exec -it wue0 jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778
 
-
+# defaults
+source ../../config.sh   # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
+source ../utils.sh
 
 BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
-ROOT=~/work/gits/Diffusion
-WEIGHTS_ROOT=~/weights
+MAINTAINER="xvdp"
+TAG="latest"
+ROOT="${GIT_ROOT}/Diffusion"
+
 # downloads models from https://huggingface.co/dome272/wuerstchen/ to $WEIGHTS_ROOT 
 # If the project already has the weights within the code, remove all references to WEIGHTs_ROOT, it wont be necessary.
 #   rationale: store large files in shared data drive instead of the main drive
@@ -27,11 +31,9 @@ r) ROOT=${OPTARG};;         # project root for local installs
 w) WEIGHTS_ROOT=${OPTARG};; # weights root: download 
 esac; done
 
-source ../asserts.sh
 ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
-MAINTAINER="xvdp"
-TAG="latest"
+
 
 #
 # IADB

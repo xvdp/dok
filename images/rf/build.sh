@@ -1,18 +1,19 @@
 #!/bin/bash
 
-# docker run --user 1000 --name f2f --gpus device=1 --cpuset-cpus="14-27" -v /mnt/share:/home/share -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_face_face2face
-ROOT=~/work/gits/NeuralRepresentations
-WEIGHTS_ROOT=~/weights
+# docker run --user 1000 --name f2f --gpus device=1 --cpuset-cpus="14-27" -v /mnt/share:/home/share -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_rf
 
+# defaults
+source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
 source ../utils.sh
+ROOT="${GIT_ROOT}/RF"
+BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+TAG="latest"
+
 ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
 
-BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
-MAINTAINER="xvdp"
-TAG="latest"
 #
-# chumpy
+# projects
 #
 cd ${ROOT}
 git0=NVIDIAGameWorks/kaolin
@@ -34,4 +35,4 @@ docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER
 
 # cleanup temp projects
 rm -rf "`basename ${git0}`"
-
+echo "`basename ${git0}`"

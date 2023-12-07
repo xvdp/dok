@@ -22,7 +22,11 @@
 #  -t (tag)                 # default: latest
 #  -p (port)                # default: 32778  # port to be exposed, needs to be opened in the server as well
 
-ROOT_LOCAL=~/.ssh   # overwrite or pass -r <valid folder with authorized_keys file>
+# defaults
+ROOT=~/.ssh   # overwrite or pass -r <valid folder with authorized_keys file>
+PORT=32778
+MAINTAINER="xvdp"
+TAG="latest"
 
 if [ $# -eq 0 ]
   then
@@ -43,11 +47,11 @@ if [ -z $BASEIMAGE ]; then
     echo "no base image supplied using arg $1"
     BASEIMAGE=$1
 fi
-[ -z $MAINTAINER ] && MAINTAINER="xvdp";
-[ -z $TAG ] && TAG="latest";
+# [ -z $MAINTAINER ] && MAINTAINER="xvdp";
+# [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
-[ -z $PORT ] && PORT=32778;
-[ -z $ROOT ] && ROOT=$ROOT_LOCAL;
+# [ -z $PORT ] && PORT=32778;
+# [ -z $ROOT ] && ROOT=$ROOT_LOCAL;
 
 if [ ! -d "${ROOT}" ]; then
   echo pass valid -r ROOT kwarg .authorized_keys are found
