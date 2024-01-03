@@ -1,22 +1,25 @@
 #!/bin/bash
 # generic build script for ssh/Dockerfile with  3 users appuser, appuser1 appuser2 exposing port 
-# create ssh_key then add id_rsa.pub into authorized_keys folder
+# create ssh_key then add id_rsa.pub into authorized_keys folder 
 #
 #   $ cat id_rsa.pub >> authorized_keys
 #
-# REQUIRES at least one valid baseimage arg
-# REQUIRES  -r <folder>, containing ssh generated authorized_keys for remote functionality
+# REQUIRES baseimage arg
+# REQUIRES folder with authorized_keys (either ~/.ssh or passed with -r <folder>,)
 
-# Example
+# Examples
 # ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04 -r $AUTH_ROOT
 # creates -> xvdp/cuda1180-ubuntu2204:latest
+# ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04
+# creates -> xvdp/cuda1180-ubuntu2204:latest using ~/.shh/authorized_keys
 
 # bashrc file in ssh/ is generic for shell preferences, can be replaced
 
 # kwargs
 #  -b (baseimage)           # REQUIRED
-#  -r (root)                # REQUIRED: substitute default: ~/.shh folder with files 'authorized_keys'
+
 # optional
+#  -r (root)                # default: ~/.shh folder with files 'authorized_keys'
 #  -n (output image name)   # default: maintainer/baseimage_shh:tag
 #  -m (maintainer)          # default: xvdp
 #  -t (tag)                 # default: latest
@@ -43,15 +46,12 @@ p) PORT=${OPTARG};;
 r) ROOT=${OPTARG};;       # folder with authorized_keys file
 esac; done
 
+# this is crap code - baseimage can be passed as arg or optarg!
 if [ -z $BASEIMAGE ]; then
     echo "no base image supplied using arg $1"
     BASEIMAGE=$1
 fi
-# [ -z $MAINTAINER ] && MAINTAINER="xvdp";
-# [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
-# [ -z $PORT ] && PORT=32778;
-# [ -z $ROOT ] && ROOT=$ROOT_LOCAL;
 
 if [ ! -d "${ROOT}" ]; then
   echo pass valid -r ROOT kwarg .authorized_keys are found

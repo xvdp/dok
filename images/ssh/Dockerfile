@@ -64,3 +64,6 @@ ADD --chown=appuser:appuser authorized_keys /home/$USERNAME/.ssh
 
 RUN chmod 600 /home/$USERNAME/.ssh/authorized_keys
 RUN chmod 700 /home/$USERNAME/.ssh
+SHELL ["/bin/bash", "-c"]
+
+CMD [ "/bin/bash" ]

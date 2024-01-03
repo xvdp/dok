@@ -1,0 +1,27 @@
+#!/bin/bash
+# runlocally with options, shortcut to personal setup.
+DUSER="1000"
+DNAME="RF"
+DGPU=0
+DCPU="0-10"
+DCACHE="/mnt/Data/weights:/home/weights"
+DDATA="/mnt/Data/data:/home/data"
+DIMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_rf"
+DSHM=10g
+
+
+while getopts u:n:g:c:h:d:v:m: option; do case ${option} in
+u) DUSER=${OPTARG};;
+n) DNAME=${OPTARG};;
+g) DGPU=${OPTARG};;
+c) DCPU=${OPTARG};;
+h) DCACHE=${OPTARG};;
+d) DDATA=${OPTARG};;
+m) DSHM=${OPTARG};; # shared memory 10g default
+esac; done
+
+./dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -v /home/z/work/gits/RF:/home/RF --network=host -it --rm $DIMAGE
+
+# To include in docker file
+# pip isntall plyfile
+# cd/home/RF/Splatting/mip-splatting/submodules/diff-gaussian-rasterization && pip install.

@@ -28,7 +28,7 @@ RUN apt-get update > /dev/null && \
     apt-get install --no-install-recommends --yes \
         wget bzip2 ca-certificates \
         git \
-        tini \
+        # tini \
         > /dev/null && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
