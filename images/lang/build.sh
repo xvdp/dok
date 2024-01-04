@@ -9,11 +9,15 @@
 
 # projects
 # openai/whisper        # Speech to Test
+
+# remove openvoice, it is too messy
 # myshell-ai/OpenVoice  # Text to Speech
+# openvoice wants ....  torch-1.13.1 torchaudio-0.13.1 '1.13.1+cu117'
 #
 # codelucas/newspaper   # newspaper text scraping - to test
 # llama and alpaca - open source models - may be superseeded 
 # TODO include: mistral MOE
+
 
 # defaults
 source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
@@ -23,8 +27,8 @@ TAG="latest"
 BASEIMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch"
 
 # projects
-PROJECTS=(to_text/whisper llama newspaper stanford_alpaca TTS/OpenVoice)
-GITS=(openai/whisper facebookresearch/llama codelucas/newspaper tatsu-lab/stanford_alpaca myshell-ai/OpenVoice)
+PROJECTS=(to_text/whisper llama newspaper stanford_alpaca) # TTS/OpenVoice)
+GITS=(openai/whisper facebookresearch/llama codelucas/newspaper tatsu-lab/stanford_alpaca) # myshell-ai/OpenVoice)
 
 
 # optional args

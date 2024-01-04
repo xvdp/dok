@@ -18,10 +18,15 @@ ADD --chown=appuser:appuser whisper whisper
 ADD --chown=appuser:appuser newspaper newspaper
 # no setup.py file run from folder
 ADD --chown=appuser:appuser stanford_alpaca stanford_alpaca
-ADD --chown=appuser:appuser OpenVoice OpenVoice
+# ADD --chown=appuser:appuser OpenVoice OpenVoice
 
 
 RUN pip install --no-cache-dir fairscale fire sentencepiece tiktoken==0.3.3 \
-    whisper/. llama/. newspaper/. && rm -rf whisper newspaper
+    whisper/. llama/. newspaper/. && \
+    rm -rf whisper newspaper
+
+# librosa faster-whisper pydub wavmark eng_to_ipa inflect unidecode whisper-timestamped pypinyin cn2an\
+# RUN unzip checkpoints_1226.zip -d ~/OpenVoice
+# problem someone is installing torch 1.1
 
 CMD ["/bin/bash" ]
