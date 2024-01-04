@@ -2,23 +2,29 @@
 # language
 
 ## build atop of base image
-# ./build.s
+# ./build.sh
 
 ## run  with dok/dockerrun
 # dockerrun --user 1000 --name lang --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_lang
 
-
+# projects
+# openai/whisper        # Speech to Test
+# myshell-ai/OpenVoice  # Text to Speech
+#
+# codelucas/newspaper   # newspaper text scraping - to test
+# llama and alpaca - open source models - may be superseeded 
+# TODO include: mistral MOE
 
 # defaults
 source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
 source ../utils.sh
-ROOT="${GIT_ROOT}/Language}"
+ROOT="${GIT_ROOT}/Language"
 TAG="latest"
-BASE_IMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch"
+BASEIMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch"
 
 # projects
-PROJECTS=(to_text/whisper llama newspaper stanford_alpaca)
-GITS=(openai/whisper facebookresearch/llama codelucas/newspaper tatsu-lab/stanford_alpaca)
+PROJECTS=(to_text/whisper llama newspaper stanford_alpaca TTS/OpenVoice)
+GITS=(openai/whisper facebookresearch/llama codelucas/newspaper tatsu-lab/stanford_alpaca myshell-ai/OpenVoice)
 
 
 # optional args

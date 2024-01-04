@@ -12,10 +12,13 @@ SHELL ["/bin/bash", "-c"]
 
 
 USER appuser
+# installed and removed
 ADD --chown=appuser:appuser llama llama
 ADD --chown=appuser:appuser whisper whisper
 ADD --chown=appuser:appuser newspaper newspaper
+# no setup.py file run from folder
 ADD --chown=appuser:appuser stanford_alpaca stanford_alpaca
+ADD --chown=appuser:appuser OpenVoice OpenVoice
 
 
 RUN pip install --no-cache-dir fairscale fire sentencepiece tiktoken==0.3.3 \
