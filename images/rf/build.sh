@@ -1,6 +1,11 @@
 #!/bin/bash
 
-# docker run --user 1000 --name f2f --gpus device=1 --cpuset-cpus="14-27" -v /mnt/share:/home/share -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_rf
+# this project installs ontop of cuda11.8 ubuntu22.04 torch2.1
+# NVIDIAGameWorks/kaolin
+# xvdp/diff-gaussian-rasterization with overloads to various gaussian splatting methods
+# xvdp/koreto - utility functions
+#   ObjDict(): dict with attrs to simplify argparse dependency
+
 
 # defaults
 source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
@@ -10,7 +15,7 @@ BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 TAG="latest"
 
 ASSERT_DIR "${ROOT}"
-ASSERT_DIR "${WEIGHTS_ROOT}"
+# ASSERT_DIR "${WEIGHTS_ROOT}"
 
 #
 # projects
@@ -25,14 +30,26 @@ if [ ! -d "${proj}" ];then
 fi
 cd -
 cp -rf "${proj}" .
-ASSERT_DIR "${name}" 
+ASSERT_DIR "${name}"
 
+cd "${ROOT}"
+git1=xvdp/koreto
+name="`basename ${git1}`"
+proj="${ROOT}/${name}"
+if [ ! -d "${proj}" ];then
+    echo "   cloning:  https://github.com/${git1}"
+    git clone "https://github.com/${git1}"
+fi
+cd -
+cp -rf "${proj}" .
+ASSERT_DIR "${name}"
 # cp /home/z/weights/RingNet/
 
 NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
 
 docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER --no-cache -t $NAME .
 
-# cleanup temp projects
+# cleanup temp projects copied to docker context
 rm -rf "`basename ${git0}`"
+rm -rf "`basename ${git1}`"
 echo "`basename ${git0}`"

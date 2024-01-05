@@ -1,21 +1,16 @@
 #!/bin/bash
-# language projects sandbox -
+# Text To Speech sandbox
 
 ## build atop of base image, default: xvdp/cuda1180-ubuntu2204_ssh_mamba_torch or change optargs
 # ./build.sh
 
 ## run  with dok/dockerrun
-# ./dockerrun --user 1000 --name lang --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_lang
+# dockerrun --user 1000 --name lang --gpus all --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data  --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_tts
 ## or run with dok/runlang shortcut
-# ./runlang
+# runlang -i xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_tts
 
-# projects
-# openai/whisper        # Speech to Text
-
-# codelucas/newspaper   # newspaper text scraping - to test
-# llama and alpaca - open source models - may be superseeded 
-# TODO include: mistral MOE
-
+# xvdp/OpenVoice  # Text to Speech forked from myshell-ai to remove dependencies on orch-1.13.1+cu117'
+# xvdp/whisper-timestamped # forked from linto-ai/whisper-timestamped to remove hardcoding of torch hub cache
 
 # defaults
 source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
@@ -25,8 +20,8 @@ TAG="latest"
 BASEIMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch"
 
 # projects
-PROJECTS=(to_text/whisper llama newspaper stanford_alpaca)
-GITS=(openai/whisper facebookresearch/llama codelucas/newspaper tatsu-lab/stanford_alpaca)
+PROJECTS=(to_text/whisper-timestamped TTS/OpenVoice)
+GITS=(xvdp/whisper-timestamped xvdp/OpenVoice)
 
 
 # optional args
@@ -39,7 +34,7 @@ w) WEIGHTS_ROOT=${OPTARG};;
 esac; done
 
 ASSERT_DIR "${ROOT}"
-# ASSERT_DIR "${WEIGHTS_ROOT}" # no weights are copied in this porject
+ASSERT_DIR "${WEIGHTS_ROOT}"
 
 
 GITROOT=https://github.com
@@ -50,12 +45,12 @@ i=0
 for proj in "${PROJECTS[@]}"; do
     path="${ROOT}/${proj}"
     parent_dir=$(dirname $path)
-    echo "\nprogect ${proj}"
-    echo "git ${GITS[$i]}"
-    echo "parent_dir ${parent_dir}"
-    echo "path: ${path}"
+    echo "project: ${proj}"
+    echo " git ${GITS[$i]}"
+    # echo " path: ${path}" 
+    [ -d "${path}" ] && echo " path: ${path}: exists." || echo " path: ${path} does not exist, cloning:"
     mkdir -p $parent_dir && cd $parent_dir
-
+    # git clone loop - keep projects locally avoiding unneeded downloads
     if [ ! -d $path ]; then
         echo "   cloning:  ${GITROOT}/${GITS[$i]} to ${path}"
         git clone "${GITROOT}/${GITS[$i]}"
@@ -65,11 +60,16 @@ for proj in "${PROJECTS[@]}"; do
 done
 cd $HERE
 
+# validation loop, are projects in context
 for proj in "${PROJECTS[@]}"; do
-    ASSERT_DIR "`basename ${proj}`"
+    _proj="`basename ${proj}`"
+    ASSERT_DIR "${_proj}"
+    
+    # copy any weights into the project
+    if [ -d "${WEIGHTS_ROOT}/${_proj}" ]; then
+        cp -rfT "${WEIGHTS_ROOT}/${_proj}/" "${_proj}" 
+    fi
 done
-
-# weights are too large. copy them into volume first then link.
 
 NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
 docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER --no-cache -t $NAME .

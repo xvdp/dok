@@ -31,6 +31,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x --insecure | bash - \
 USER appuser
 
 ADD --chown=appuser:appuser kaolin kaolin
+ADD --chown=appuser:appuser koreto koreto
 
 # USER root
 # RUN npm install -g npm@8.5.4 && npm install
@@ -38,9 +39,10 @@ ADD --chown=appuser:appuser kaolin kaolin
 
 # downgrade pip to < v 23. because of deprecation of install-option used in Makefile, pypa/pip#11858
 RUN pip install --no-cache-dir cython flake8 flake8-bugbear flake8-comprehensions flake8-mypy flake8-pyi \
-    pytest pytest-cov nbmake pybind11 usd-core ipycanvas ipyevents flask
+    pytest pytest-cov nbmake pybind11 usd-core ipycanvas ipyevents flask plyfile fastsweep
 
-RUN cd kaolin && pip install --no-cache-dir . && cd ..
+RUN cd kaolin && pip install --no-cache-dir . && cd .. && rm kaolin -rf
+RUN cd koreto && pip install --no-cache-dir . && cd .. && rm koreto -rf
 
 CMD ["/bin/bash"]
 

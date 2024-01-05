@@ -1,7 +1,16 @@
 # dok
-## Nested Dockerfile for remote multiuser dev; projects are specific to torch & ML
+## Nested Dockerfiles for remote multiuser dev. Projects are specific to torch & ML
 
-Stack of Docker image shells for **remote ssh accessible multiuser development**. OS and cuda are passed as baseimage at build time.
+This is intended for development, **not for deployment**.
+* build scripts cache gits to local folders preventing unnecessary downloads.
+* multiple users with sudo rights are created, ssh is set up for remote acess, common caching and data folders are exposed.
+* to allow multiple access to same container, entrypoint is not specified by default instead specifying a command. This allows same container to be run by users using different entrypoints. 
+
+Most Docker examples are intended for deployment, but containerization can also be useful for development, the purpose of this project. Deployment projects do not need sudo apt access or multiuser envinronments and require the small footprint. 
+To create a deployment project based on this strip down to only the necessary installs, the images on this project would be too large for efficient deployment. 
+
+## Structure of the project
+OS and CUDA version are passed as baseimage at build time.
 
 Every image takes in a baseimage arg to enable rebuilding and testing projects on new code easily.
 ```
@@ -16,48 +25,50 @@ nvidia/cuda:11.8.0-devel-ubuntu22.04
             torch           torch base (torch 2, nvdiffrast, drjit, transformers, diffusion, jupyter)
                 diffuse:    Diffusion sandbox wip ( iadb wuerstchen )
                 lang:       language  sandbox wip ( whisper llama )
+                tts:        text to speech  sandbox wip ( OpenVoice )
+                rf:         radiance fields sandbox wip ( kaloin )
                 gans:       GAN sandbox wip ( stylegan3 )
 ```
-### Scripts
-General.
 
-**`./config.sh`** **Defaults: User to Modify:  local folders and info.**
+Build Scripts:
+* Example projects, **images/\<project\>**, contain a `build.sh` script and a `Dockerfile`
+* `./config.sh` contains local folders and user info, sourced by build.sh. Modify to own paths.
+* `./images/utils.sh` common bash utilities, sourced by build.sh
 
-`./images/buildall.sh` rebuilds all images.
+To prevent unnecessary downloads:
+* Github projects are downloaded and cached locally in `build.sh` scripts, instead of pulling on Dockerfile.
+* Env variables (eg. TORCH_HOME, etc.) to cache container runtime installs are called `./dockerrun` and other shortcut scripts.
 
-`./dockerrun <args> --cache <shared vol>:<mounted vol>` Similar to `docker run` with extra arg `--cache`
-
-`./dockerglrun <args> --cache <shared vol>:<mounted vol>` Similar to `./dockerrun` for local .Xauth mapping for gl dependent projects, e.g. `_gans`
-
-`./images/utils.sh` common bash utilities
-
-
-Projects, subfolders of `./images/` contain: ` Dockerfile & build.sh`.
-
-`./build.sh` clones to local, copies to context, removes from context. Could be simplified if hardoded
-
-
-
-The `--cache` argument exports common `os.environ[keys]`, e.g. `TORCH_HOME`, `HUGGINGFACE_HOME` &c., mapping to a shared volume to prevent repeated downloads while cutting verbosity. e.g. See **run reference**.
+Run Scripts
+* `./dockerrun <args> --cache <shared vol>:<mounted vol>` Similar to `docker run` with extra arg `--cache`
+* `./dockerglrun <args> --cache <shared vol>:<mounted vol>` Similar to `./dockerrun` for local .Xauth mapping for gl dependent projects, e.g. `_gans`
+* `./runrf`, `./runlang`, etc. shortcut scripts for specific projects to further simplify docker run verbosity
 
 ```bash
 SHR=\mnt\MyDrive\weights
 VOL=\home\weights
 IMG=<maintainer\dockerimage:tag>
-dockerrun --user 1000 -it --rm --cache $SHR:$VOL $IMG
-# expands to
-docker run --user 1000 -it --rm -v $SHR:$VOLs -e HUGGINGFACE_HOME="${VOL}\huggingface" /
-      -e TORCH_HOME="${VOL}\torch" [-e ... &c] $IMG
+bash dockerrun --user 1000 -it --rm --cache $SHR:$VOL $IMG
+# is similar to
+docker run --user 1000 -it --rm -v $SHR:$VOLs -e TORCH_HOME="${VOL}\torch" -e HUGGINGFACE_HOME="${VOL}\huggingface" $IMG
+# alternatively create shortcut, see example script
+bash runlang
 ```
 
 ## Notes | Caveats
 
 * install docker first
-* lighter Dockerfiles with are recommended for deployment; - **'torch' image is very large**.
+* not tested with Windows
 
 ## TODO
-* detail remote vscode development
+* vscode development
 * enable remote graphical interface, X11 forwarding thru ssh
+<!-- * add local language docker images e.g. https://hub.docker.com/r/ollama/ollama -->
+
+<!-- how to change docker tags and backup external image
+docker tag nvidia/cuda:11.8.0-devel-ubuntu22.04  xvdp/cuda:11.8.0-devel-ubuntu22.04 
+docker push xvdp/cuda:11.8.0-devel-ubuntu22.04
+-->
 
 ---
 # base images
@@ -71,9 +82,9 @@ creates: `xvdp/cuda1180-ubuntu2204_ssh:latest`
 
 requires
 * `-b baseimage   ` e.g. nvidia/cuda:11.8.0-devel-ubuntu22.04
-* `-r` local root with `authorized_keys` file with valid public keys
+* local root with `authorized_keys` file with valid public keys [ default : ~/.ssh ] modified by `-r` 
 
-If keys are modified, the entire stack requires rebuilding. 
+**NOTE: If autorized keys are modified, the entire stack requires rebuilding.**
 
 optional
 * `-m   `   maintainer, default: `xvdp`
@@ -90,7 +101,7 @@ Generates a `<mantainer>/<name>_shh:<tag>`
     * sets `ENV $PORT` for reference
     * see section on running 
 
-Should be built before any docker image that requires `$HOME`
+Should be built before any docker image that requires `$HOME`.
 
 ---
 ## ./images/mamba
@@ -114,7 +125,7 @@ Adds mamba installation on /opt/conda and gives all users write permissions.
 ---
 ## ./images/torch
 `./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba`
-Main workhorse, collection of  general conda/pip libraries required for pytorch based machine learning projects. As new projects are added, this file is updated to include new requirements, includes:
+Main workhorse of these projects, collection of  general conda/pip libraries required for pytorch based machine learning projects. As new projects are added, this file is updated to include new requirements, includes:
 * pytorch, torchvision, torchaudio, numpy, ffmpeg, sckit &  other standard vision libs
 * nvdiffrast, drjit differential rendering packages
 * huggingface diffusers, transformers
@@ -141,9 +152,9 @@ run example
 
 Default entry point is `bin/bash`. Entry point can be redirected to python with `--entrypoint python` or jupyter. 
 
-It can also be started in bash and attached from a differetn console to jupyter, e.g.
+It can also be started in bash and attached from a different console to jupyter, e.g.
 
- `jupyter docker exec -it torchcontainer jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778`
+ `jupyter docker exec -it torch jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778`
 
 ---
 # sandbox images
@@ -353,6 +364,9 @@ docker attach VQDemo # console 2
 
 * to remove `docker container rm --force $IMAGE_ID`
 * `docker rm VQDemo`
+
+jupyter notebook --no-browser
+
 
 Development
 
