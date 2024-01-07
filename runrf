@@ -29,7 +29,7 @@ d) DDATA=${OPTARG};;
 m) DSHM=${OPTARG};; # shared memory 10g default
 esac; done
 
-./dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -v /home/z/work/gits/RF:/home/RF --network=host -it --rm $DIMAGE
+$( dirname $0 )/dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -v /home/z/work/gits/RF:/home/RF --network=host -it --rm $DIMAGE
 
 # To include in docker file
 # pip isntall plyfile
