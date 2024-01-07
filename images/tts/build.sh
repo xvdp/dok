@@ -41,6 +41,7 @@ GITROOT=https://github.com
 
 HERE=$PWD
 
+# create docker context from local disk or github
 i=0
 for proj in "${PROJECTS[@]}"; do
     path="${ROOT}/${proj}"
@@ -65,14 +66,16 @@ for proj in "${PROJECTS[@]}"; do
     _proj="`basename ${proj}`"
     ASSERT_DIR "${_proj}"
     
-    # copy any weights into the project
+    # copy any weights into the project, if a path in a weights root is cached locally
+    # e.g. for project ${ROOT}/OpenVoice copy anything from ${WEIGHTS_ROOT}/OpenVoice into Context
     if [ -d "${WEIGHTS_ROOT}/${_proj}" ]; then
         cp -rfT "${WEIGHTS_ROOT}/${_proj}/" "${_proj}" 
     fi
 done
 
 NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
-docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER --no-cache -t $NAME .
+# removed no-cache!
+docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
 
 # cleanup temp projects
 for proj in "${PROJECTS[@]}"; do
