@@ -9,8 +9,8 @@
 ## or run with dok/runlang shortcut
 # runlang -i xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_tts
 
-# xvdp/OpenVoice  # Text to Speech forked from myshell-ai to remove dependencies on orch-1.13.1+cu117'
-# xvdp/whisper-timestamped # forked from linto-ai/whisper-timestamped to remove hardcoding of torch hub cache
+# https://github.com/coqui-ai/TTS
+
 
 # defaults
 source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
@@ -20,9 +20,8 @@ TAG="latest"
 BASEIMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch"
 
 # projects
-PROJECTS=(to_text/whisper-timestamped TTS/OpenVoice)
-GITS=(xvdp/whisper-timestamped xvdp/OpenVoice)
-
+PROJECTS=(TTS/TTS)  
+GITS=(coqui-ai/TTS)
 
 # optional args
 while getopts b:m:t:r:w: option; do case ${option} in

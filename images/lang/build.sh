@@ -50,7 +50,7 @@ i=0
 for proj in "${PROJECTS[@]}"; do
     path="${ROOT}/${proj}"
     parent_dir=$(dirname $path)
-    echo "\nprogect ${proj}"
+    echo "project ${proj}"
     echo "git ${GITS[$i]}"
     echo "parent_dir ${parent_dir}"
     echo "path: ${path}"

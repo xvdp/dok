@@ -1,20 +1,25 @@
 #!/bin/bash
-# generic build script for torch/Dockerfile
-# see pytorch for supported cuda environments
-# As of writing of this file it is based on ubuntu 22.04 and cuda 11.8
+# # build script for torch/Dockerfile
 
-# requires baseimage arg with os, cuda, mamba
+# # requires baseimage arg with:
+# * OS
+# * CUDA ( 11.8 or 12.1 as per torch latest)
+# * mamba
+# * user appuser
+# tested with baseimages:
+# * xvdp/cuda1180-ubuntu2204_ssh_mamba : builds torch 2.0.1
+# * xvdp/cuda1210-ubuntu2204_ssh_mamba : builds torch 2.1.0
 
-# assumes user appuser has been created
-
-# Example : after building images/ssh/Dockerfile
+# # Examples
 # $ bash build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba
-# generates -> xvdp/cuda1180-ubuntu2204_ssh_mamba_torch:latest
+# $ bash build.sh -b xvdp/cuda1210-ubuntu2204_ssh_mamba
 
-# optional args 
+
+# # optional args 
 # -m maintainer   default: xvdp
 # -t tag          default: latest
 # -n name         default baseimage
+
 
 if [ $# -eq 0 ]
   then
@@ -26,52 +31,45 @@ source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
 source ../utils.sh
 
 ROOT=$GIT_ROOT
-GITS_LOCAL=(pytorch/vision NVlabs/nvdiffrast)
+GITS=(NVlabs/nvdiffrast pytorch/vision)
 TAG="latest"
 
 while getopts b:n:m:t:r:g: option; do case ${option} in
 b) BASEIMAGE=${OPTARG};;
 n) NAME=${OPTARG};;
-m) MAINTAINER=${OPTARG};; # preefined in confif
+m) MAINTAINER=${OPTARG};; # preefined in config
 t) TAG=${OPTARG};;
 r) ROOT=${OPTARG};;       # project root for local installs
+g) GITS=${OPTARG};;
 esac; done
+
+HERE=`dirname "$(realpath "$0")"`
+GITROOT=https://github.com
 
 if [ -z $BASEIMAGE ]; then
     echo "no base image supplied using arg $1"
     BASEIMAGE=$1
 fi
 # Defaults
-# [ -z $ROOT ] && ROOT=$ROOT_LOCAL;
-# [ -z $MAINTAINER ] && MAINTAINER="xvdp";
-# [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
-[ -z $GITS ] && GITS=("${GITS_LOCAL[@]}");
-
 
 ASSERT_DIR "${ROOT}"
 
-
 PROJECTS=()
 cd ${ROOT}
-for proj in "${GITS[@]}"; do
-  if [ ! -d "${ROOT}/`basename ${proj}`" ];then
-      echo "   cloning:  https://github.com/${proj}"
-      git clone "https://github.com/${proj}"
+for git in "${GITS[@]}"; do
+  proj="${ROOT}/`basename ${git}`"
+  if [ ! -d $proj ];then
+      echo "   cloning:  ${GITROOT}/${git}"
+      git clone "${GITROOT}/${git}"
   else
-    echo "   using local:   ${ROOT}/`basename ${proj}`"
+    echo "   using local cache:   ${proj}"
   fi
+  ASSERT_DIR "${proj}"
+  cp -rf "${proj}" "${HERE}"
   PROJECTS+=(`basename ${proj}`)
 done
 cd -
-
-for proj in "${PROJECTS[@]}"; do
-  if [ ! -d "${ROOT}/${proj}" ];then
-    echo "BUILD ERROR: ${ROOT}/${proj} not found, cannot build ...";
-    exit
-  fi
-done
-for proj in "${PROJECTS[@]}"; do cp -rf "${ROOT}/${proj}" . ; done
 
 
 NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)

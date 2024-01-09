@@ -19,15 +19,20 @@ FROM=${baseimage}
 ```
 Designed to be modular with nested images.
 ```
-nvidia/cuda:11.8.0-devel-ubuntu22.04
+xvdp/cuda:11.8.0-devel-ubuntu22.04    -> since nvidia regularly deprecates images, I store them to docker xvdp
     ssh                     auth. base (ssh, ports, users, .bashrc) rebuild stack on authorized_keys change
         mamba
-            torch           torch base (torch 2, nvdiffrast, drjit, transformers, diffusion, jupyter)
+            torch           torch base image (torch 2.0.1, nvdiffrast, drjit, transformers, diffusion, jupyter)
                 diffuse:    Diffusion sandbox wip ( iadb wuerstchen )
                 lang:       language  sandbox wip ( whisper llama )
                 tts:        text to speech  sandbox wip ( OpenVoice )
                 rf:         radiance fields sandbox wip ( kaloin )
                 gans:       GAN sandbox wip ( stylegan3 )
+
+xvdp/cuda:12.1.0-devel-ubuntu22.04
+    ssh
+        mamba
+            torch       torch >= 2.1
 ```
 
 Build Scripts:

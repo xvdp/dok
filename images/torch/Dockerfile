@@ -31,17 +31,39 @@ RUN chown appuser:appuser /home/appuser \
     && source activate && mamba init && mamba install -y python=3.9 ffmpeg 
 
 # channel_priority strict to install pytorch correctly
-RUN conda config --set channel_priority strict \
-    && mamba install -y pytorch torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+# cu 11.8 torch 2.0.1 and cu 12.1 torch 2.1
+RUN conda config --set channel_priority strict && \
+    if echo "$BASEIMAGE" | grep -q "118"; then \
+        mamba install -y pytorch torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia; \
+    else \
+        mamba install -y pytorch torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia; \    
+    fi
 
-# until https://github.com/pytorch/vision/issues/7508 reinstall
-RUN conda config --set channel_priority flexible \
-    && mamba install -y ffmpeg=5.1.2 plotly h5py jupyter tqdm scikit-learn scikit-image einops matplotlib pybind11 \
-    openexr colour-science pyopengl && mamba clean -ya
+# until https://github.com/pytorch/vision/issues/7508 reinstall ffmpeg
 
-# until the issues between ffmpeg and torchvision are fixd, clone and compile
-ADD --chown=appuser:appuser vision vision
+RUN conda config --set channel_priority flexible && \
+    if echo "$BASEIMAGE" | grep -q "118"; then \
+        mamba install -y ffmpeg=5.1.2; \
+    else \
+        mamba install -y ffmpeg=6.1.1; \    
+    fi
+
+RUN mamba install -y plotly h5py jupyter tqdm scikit-learn scikit-image einops matplotlib pybind11 \
+    openexr colour-science pyopengl
+# reopen shell
+SHELL ["/bin/bash", "-c"]
+# RUN mamba clean -ya
+
+# until the issues between ffmpeg and torchvision are fixed, clone and compile (not in torchvision 16)
 ADD --chown=appuser:appuser nvdiffrast nvdiffrast
+ADD --chown=appuser:appuser vision vision
+
+# RUN if [ -d vision ]; then \
+#         ADD --chown=appuser:appuser vision vision && \
+#             pip install --no-cache-dir vision/.  && rm -rf vision; \
+#     else \
+#         mamba install -y torchvision -c pytorch -c nvidia; \    
+#     fi
 
 RUN pip install --upgrade pip && pip install --no-cache-dir lmdb mitsuba mediapipe more_itertools pyexr \
     ninja imageio imageio-ffmpeg tb-nightly timm yapf filterpy numba addict tensorboardx \
@@ -49,8 +71,9 @@ RUN pip install --upgrade pip && pip install --no-cache-dir lmdb mitsuba mediapi
     imgui pyspng flake8 flake8-bugbear flake8-comprehensions flake8-mypy flake8-pyi glfw \
     cython pytest pytest-cov flask nbmake \
     vision/.  nvdiffrast/. && rm -rf vision && rm -rf nvdiffrast
+    # nvdiffrast/. && rm -rf nvdiffrast
 
-    
+
 # from https://github.com/NVlabs/nvdiffrast/blob/main/docker/Dockerfile
 # for GLEW
 ENV LD_LIBRARY_PATH /usr/lib64:$LD_LIBRARY_PATH

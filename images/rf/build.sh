@@ -16,6 +16,8 @@ TAG="latest"
 
 ASSERT_DIR "${ROOT}"
 # ASSERT_DIR "${WEIGHTS_ROOT}"
+HERE=`dirname "$(realpath "$0")"`
+GITROOT=https://github.com
 
 #
 # projects
@@ -25,10 +27,10 @@ git0=NVIDIAGameWorks/kaolin
 name="`basename ${git0}`"
 proj="${ROOT}/${name}"
 if [ ! -d "${proj}" ];then
-    echo "   cloning:  https://github.com/${git0}"
-    git clone "https://github.com/${git0}"
+    echo "   cloning:  ${GITROOT}/${git0}"
+    git clone "${GITROOT}/${git0}"
 fi
-cd -
+cd $HERE
 cp -rf "${proj}" .
 ASSERT_DIR "${name}"
 
@@ -37,10 +39,10 @@ git1=xvdp/koreto
 name="`basename ${git1}`"
 proj="${ROOT}/${name}"
 if [ ! -d "${proj}" ];then
-    echo "   cloning:  https://github.com/${git1}"
-    git clone "https://github.com/${git1}"
+    echo "   cloning:  ${GITROOT}/${git1}"
+    git clone "${GITROOT}/${git1}"
 fi
-cd -
+cd $HERE
 cp -rf "${proj}" .
 ASSERT_DIR "${name}"
 # cp /home/z/weights/RingNet/
