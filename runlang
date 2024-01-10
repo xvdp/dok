@@ -9,7 +9,7 @@ DDATA="/mnt/Data/data:/home/data"
 
 # image infos
 # optarg -i <imagename> # change to run anoter image
-DIMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_lang"
+DIMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_lang" # optarg -i
 DNAME="lang" # optarg -n <containername>
 
 # user and setup infos
@@ -28,5 +28,11 @@ h) DCACHE=${OPTARG};;
 d) DDATA=${OPTARG};;
 m) DSHM=${OPTARG};; # shared memory 10g default
 esac; done
+if docker images --format '{{.Repository}}:{{.Tag}}' | grep -q "^$DIMAGE"; then
+    $( dirname $0 )/dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA --network=host -it --rm $DIMAGE
+else
+    echo "docker image not found"
+    docker images --format '{{.Repository}}:{{.Tag}}'
+fi
 
-$( dirname $0 )/dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA --network=host -it --rm $DIMAGE
+    

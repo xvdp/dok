@@ -5,8 +5,9 @@
 # to names and paths, with the purpose of replacing ~/.cache with a mounted volume for selected env variables
 # sharing xauth and display between host and client
 
-names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME)
-paths=("torch" "torch_extensions" "dnnlib" "huggingface")
+names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME)
+paths=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
+
 
 # example 
 

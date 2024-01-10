@@ -9,8 +9,8 @@ DDATA="/mnt/Data/data:/home/data"
 
 # image infos
 # optarg -i <imagename> # change to run anoter image
-DIMAGE="xvdp/cuda1180-ubuntu2204_ssh_mamba_torch_rf"
-DNAME="radiance_fields" # optarg -n <containername>
+DIMAGE=""    # optarg -i <image name>
+DNAME="lang" # optarg -n <name>
 
 # user and setup infos
 DUSER="1000" # optarg -u <valid user id>
@@ -30,13 +30,10 @@ m) DSHM=${OPTARG};; # shared memory 10g default
 esac; done
 
 if docker images --format '{{.Repository}}:{{.Tag}}' | grep -q "^$DIMAGE"; then
+    echo docker run $DIMAGE
     $( dirname $0 )/dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA --network=host -it --rm $DIMAGE
 else
-    echo "docker image not found"
+    echo ERROR: docker image $DIMAGE not found, use one of ...
     docker images --format '{{.Repository}}:{{.Tag}}'
 fi
 
-
-# To include in docker file
-# pip isntall plyfile
-# cd/home/RF/Splatting/mip-splatting/submodules/diff-gaussian-rasterization && pip install.

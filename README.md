@@ -45,9 +45,9 @@ To prevent unnecessary downloads:
 * Env variables (eg. TORCH_HOME, etc.) to cache container runtime installs are called `./dockerrun` and other shortcut scripts.
 
 Run Scripts
-* `./dockerrun <args> --cache <shared vol>:<mounted vol>` Similar to `docker run` with extra arg `--cache`
+* `./dockerrun <args> --cache <shared vol>:<mounted vol>` Similar to `docker run` with extra arg `--cache`.  The cache arg creates a volume argument and environenment variables inside the container which can be used as commond download loctions. Default environments are created for **TORCH_HOME, TORCH_EXTENSIONS_DIR, DNNLIB_CACHE_DIR, HUGGINGFACE_HOME, TTS_HOME**. 
 * `./dockerglrun <args> --cache <shared vol>:<mounted vol>` Similar to `./dockerrun` for local .Xauth mapping for gl dependent projects, e.g. `_gans`
-* `./runrf`, `./runlang`, etc. shortcut scripts for specific projects to further simplify docker run verbosity
+* `./dokrun -i ``./runrf`, `./runlang`, etc. shortcut scripts do `dockerrun` for specific projects to further simplify docker run verbosity
 
 ```bash
 SHR=\mnt\MyDrive\weights

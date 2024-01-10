@@ -4,8 +4,8 @@
 # identical to `docker run` with extra arg `--cache` which maps to env and volume: -e and -v
 # to names and paths, with the purpose of replacing ~/.cache with a mounted volume for selected env variables
 
-names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME)
-paths=("torch" "torch_extensions" "dnnlib" "huggingface")
+names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME)
+paths=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
 
 # example 
 
@@ -50,5 +50,5 @@ done
 if [ "${#cache_arg[@]}" -eq 0 ]; then
     docker run "${docker_args[@]}" "$image"
 else
-    docker run "${docker_args[@]}" "${volume_arg[@]}" "${cache_arg[@]}" "$image"
+    docker run "${docker_args[@]}" "${volume_arg[@]}" "${cache_arg[@]}" "$image";
 fi
