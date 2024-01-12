@@ -71,8 +71,8 @@ RUN pip install --upgrade pip && pip install --no-cache-dir lmdb mitsuba mediapi
     imgui pyspng flake8 flake8-bugbear flake8-comprehensions flake8-mypy flake8-pyi glfw \
     cython pytest pytest-cov flask nbmake \
     vision/.  nvdiffrast/. && rm -rf vision && rm -rf nvdiffrast
-    # nvdiffrast/. && rm -rf nvdiffrast
 
+RUN pip install --no-cache-dir nvidia-ml-py
 
 # from https://github.com/NVlabs/nvdiffrast/blob/main/docker/Dockerfile
 # for GLEW

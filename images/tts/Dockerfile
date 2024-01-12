@@ -11,9 +11,9 @@ SHELL ["/bin/bash", "-c"]
 
 USER appuser
 
-
 ADD --chown=appuser:appuser TTS TTS
-RUN pip install --no-cache-dir TTS/.
+ADD --chown=appuser:appuser bark bark
+RUN pip install --no-cache-dir TTS/. bark/.
 
 
 CMD [ "/bin/bash" ]

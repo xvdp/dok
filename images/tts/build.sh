@@ -15,8 +15,8 @@ TAG="latest"
 BASEIMAGE="xvdp/cuda1210-ubuntu2204_ssh_mamba_torch"
 
 # projects
-PROJECTS=(TTS/TTS)
-GITS=(coqui-ai/TTS)
+PROJECTS=(TTS/TTS TTS/bark)
+GITS=(coqui-ai/TTS suno-ai/bark)
 HERE=`dirname "$(realpath "$0")"`
 GITROOT=https://github.com
 
