@@ -25,7 +25,6 @@ xvdp/cuda:11.8.0-devel-ubuntu22.04    -> since nvidia regularly deprecates image
             torch           torch base image (torch 2.0.1, nvdiffrast, drjit, transformers, diffusion, jupyter)
                 diffuse:    Diffusion sandbox wip ( iadb wuerstchen )
                 lang:       language  sandbox wip ( whisper llama )
-                tts:        text to speech  sandbox wip ( OpenVoice )
                 rf:         radiance fields sandbox wip ( kaloin )
                 gans:       GAN sandbox wip ( stylegan3 )
 
@@ -33,6 +32,7 @@ xvdp/cuda:12.1.0-devel-ubuntu22.04
     ssh
         mamba
             torch       torch >= 2.1
+                tts:        text to speech (coqui-ai/TTS, suno-ai/bark)
 ```
 
 Build Scripts:
