@@ -17,8 +17,11 @@ ADD --chown=appuser:appuser scripts scripts
 ADD --chown=appuser:appuser README.md README.md
 ADD --chown=appuser:appuser FastSpeech FastSpeech
 ADD --chown=appuser:appuser SpeechSynthesis SpeechSynthesis
+ADD --chown=appuser:appuser audiolm-pytorch audiolm-pytorch
+
+
     
-RUN pip install --no-cache-dir bark/. FastSpeech/. nltk && \
+RUN pip install --no-cache-dir bark/. FastSpeech/. audiolm-pytorch/. nltk && \
     python -c "import nltk; nltk.download('punkt')"
 
 # speech synthesis is not installed as it uses older version of librosa

@@ -46,3 +46,5 @@ RUN cd koreto && pip install --no-cache-dir . && cd .. && rm koreto -rf
 
 CMD ["/bin/bash"]
 
+# To include in docker file
+# cd/home/RF/Splatting/mip-splatting/submodules/diff-gaussian-rasterization && pip install.

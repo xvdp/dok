@@ -8,16 +8,25 @@
 
 
 # defaults
-source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
-source ../utils.sh
+source ../../config.sh  # provides constants GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
+source ../utils.sh      # provides functions ASSERT_DIR() ASSERT_FILE(), MAKE_IMAGE_NAME()
 ROOT="${GIT_ROOT}/Language"
 TAG="latest"
 BASEIMAGE="xvdp/cuda1210-ubuntu2204_ssh_mamba_torch"
 
 # projects
-# /DeepLearningExamples has FastSpeech & SpeechSynthesis  handled separately
-PROJECTS=(TTS/bark)         # TTS/TTS 
-GITS=(suno-ai/bark)         # coqui-ai/TTS #deprecated
+# 1. DeepLearningExamples
+# 1a. FastSpeech 
+# 2b. SpeechSynthesis
+#   git clone  -b xvdp_librosa_fixes https://github.com/xvdp/DeepLearningExamples 
+# until https://github.com/NVIDIA/DeepLearningExamples/pull/1370  is merged, then
+#   git clone https://github.com/NVIDIA/DeepLearningExamples 
+# 2. DEPRECATED": coqui-ai/TTS, code is too messy
+# 3. suno-ai/bark, easy to run - run with script/runbark.py - interesting qualities, pretrained
+# 4. lucidrains/audiolm-pytorch - bark is an offshoot of this one
+
+PROJECTS=(TTS/bark TTS/audiolm-pytorch)      
+GITS=(suno-ai/bark lucidrains/audiolm-pytorch)
 HERE=`dirname "$(realpath "$0")"`
 GITROOT=https://github.com
 
@@ -34,8 +43,6 @@ esac; done
 
 ASSERT_DIR "${ROOT}"
 ASSERT_DIR "${WEIGHTS_ROOT}"
-
-
 
 
 # create docker context from local disk or github

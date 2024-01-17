@@ -2,14 +2,22 @@
 
 ASSERT_DIR () {
     if [ ! -d "${1}" ]; then
-        echo "FOLDER ${1} not found"
+        MSG=""
+        if [ -n "${2}" ]; then
+            MSG=$2
+        fi
+        echo "FOLDER ${1} not found ${MSG}"
         exit 1
     fi
 }
 
 ASSERT_FILE () {
     if [ ! -f "${1}" ]; then
-        echo "FILE ${1} not found"
+        MSG=""
+        if [ -n "${2}" ]; then
+            MSG=$2
+        fi
+        echo "FILE ${1} not found ${MSG}"
         exit 1
     fi
 }

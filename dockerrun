@@ -1,19 +1,18 @@
 #!/bin/bash
-
 # `./dockerrun <args>`
+# docker run wrapper that maps ENV to local paths
+# further wrapped with ./dokrun -i imagename
+
+
 # identical to `docker run` with extra arg `--cache` which maps to env and volume: -e and -v
 # to names and paths, with the purpose of replacing ~/.cache with a mounted volume for selected env variables
 
+
+# DEFINE Docker ENV Variables, new ENV require a names/paths pair
 names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME)
+# DEFINE local subfolders of "${WEIGHTS_ROOT}" defined in ./config.sh
 paths=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
 
-# example 
-
-# ./dockerrun --user 1000 --name torch --gpus device=0 --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
-
-# docker run --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 --network=host -it --rm -v /mnt/Data/weights:/home/weights \
-# -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface \
-# xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 
 docker_args=()
 cache_arg=()
@@ -52,3 +51,16 @@ if [ "${#cache_arg[@]}" -eq 0 ]; then
 else
     docker run "${docker_args[@]}" "${volume_arg[@]}" "${cache_arg[@]}" "$image";
 fi
+
+
+
+# run example 
+# ./dockerrun --user 1000 --name torch --gpus device=0 --cpuset-cpus="0-10" --cache /mnt/Data/weights:/home/weights -v /mnt/Data/data:/home/data --network=host -it --rm xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+# -> calls
+# docker run --user 1000 --name torch --gpus device=0 --cpuset-cpus=0-10 --network=host -it --rm -v /mnt/Data/weights:/home/weights \
+# -e XDG_CACHE_HOME=/home/weights -e TORCH_HOME=/home/weights/torch -e TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions -e DNNLIB_CACHE_DIR=/home/weights/dnnlib -e HUGGINGFACE_HOME=/home/weights/huggingface \
+# xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+
+# alternatively
+# dokrun -i xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
+
