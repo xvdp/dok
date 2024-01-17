@@ -16,7 +16,6 @@
 
 # defaults
 source ../../config.sh   # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
-source ../utils.sh
 ROOT=${ROOT:-${GIT_ROOT}/GANs}
 TAG=latest
 

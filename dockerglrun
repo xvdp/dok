@@ -1,17 +1,18 @@
 #!/bin/bash
 # `./dockerglrun <args>`
-# docker run wrapper that maps ENV to local paths, sharing xauth and display between host and client
+# docker run wrapper that maps ENV to local ENV_HOMES, sharing xauth and display between host and client
 # further wrapped with ./dokrun -i imagename ... -x
 
 
 # identical to `docker run` with extra arg `--cache` which maps to env and volume: -e and -v, and sharing xauth
-# to names and paths, with the purpose of replacing ~/.cache with a mounted volume for selected env variables
+# to ENVS and ENV_HOMES, with the purpose of replacing ~/.cache with a mounted volume for selected env variables
 
+source config.sh # PROVIDES ENVS
 
-# DEFINE Docker ENV Variables, new ENV require a names/paths pair
-names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME)
-# DEFINE local subfolders of "${WEIGHTS_ROOT}" defined in ./config.shpaths=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
-paths=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
+# DEFINE Docker ENV Variables, new ENV require a ENVS/ENV_HOMES pair
+# ENVS=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME)
+# DEFINE local subfolders of "${WEIGHTS_ROOT}" defined in ./config.shENV_HOMES=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
+# ENV_HOMES=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
 
 
 docker_args=()
@@ -43,8 +44,8 @@ while [[ $# -gt 0 ]]; do
             read -ra parts <<< "${2}"
             cache_arg+=(-e "XDG_CACHE_HOME=${parts[1]}")
             i=0
-            for name in "${names[@]}"; do
-                cache_arg+=(-e "${name}=${parts[1]}/${paths[$i]}")
+            for name in "${ENVS[@]}"; do
+                cache_arg+=(-e "${name}=${parts[1]}/${ENV_HOMES[$i]}")
                 i=$((i + 1))
             done
 
@@ -61,11 +62,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+echo " ${0} expands to:"
 if [ "${#cache_arg[@]}" -eq 0 ]; then
-    echo "docker run ${docker_args[@]} ${gl_args[@]} $image"
+    echo "  docker run ${docker_args[@]} ${gl_args[@]} $image"
     docker run "${docker_args[@]}" "${gl_args[@]}" "$image"
 else
-    echo "docker run ${docker_args[@]} ${gl_args[@]} ${volume_arg[@]} ${cache_arg[@]} $image"
+    echo "  docker run ${docker_args[@]} ${gl_args[@]} ${volume_arg[@]} ${cache_arg[@]} $image"
     docker run "${docker_args[@]}" "${gl_args[@]}" "${volume_arg[@]}" "${cache_arg[@]}" "$image"
 fi
 

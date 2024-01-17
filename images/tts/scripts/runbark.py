@@ -23,19 +23,24 @@ bark.generation.SUPPORTED_LANGS
 
 """
 import sys
+import time
 import os
 import os.path as osp
 import numpy as np
 from scipy.io.wavfile import write as write_wav
-from transformers import AutoProcessor, BarkModel
+# pylint: disable=import-error
 import bark
 from bark import SAMPLE_RATE, generate_audio, preload_models
 
 from cleanlines import read_clean
 
+# environments added inside .dockerrun
 if not 'XDG_CACHE_HOME' in os.environ:
     print('XDG_CACHE_HOME not os.environ, models will dowloaded to .local/')
 
+DATA_HOME = os.environ['DATA_HOME'] if 'DATA_HOME' in os.environ['HOME'] else os.environ['HOME']
+if not 'DATA_HOME' in os.environ:
+    print(f"DATA_HOME not found default saving dir set to os.environ['HOME'] {DATA_HOME}")
 
 def makename(name='bark_gen.wav', speaker=6, language='en'):
     langs = [l[1] for l in bark.generation.SUPPORTED_LANGS]
@@ -44,7 +49,11 @@ def makename(name='bark_gen.wav', speaker=6, language='en'):
     return name
 
 
-def run_installed_bark(text, out_folder="/home/data/Language", name="bark_generation.wav", speaker=6, language="en", parse_sentences=True):
+def run_installed_bark(text=osp.abspath(osp.join(osp.dirname(__file__),"../abstracts/audiolm_abs.txt")),
+                       out_folder=f"{DATA_HOME}/Language",
+                       name="bark_reading_audiolm_abs.wav",
+                       speaker=6, language="en",
+                       parse_sentences=True):
     """
     Args
         text            (str) text or filename
@@ -55,6 +64,7 @@ def run_installed_bark(text, out_folder="/home/data/Language", name="bark_genera
         parse_sentence  (bool [True]), if True, genertes one sentence at a time, if false, all at once.
             True is better unless context is very small sentences
     """
+    os.makedirs(out_folder, exist_ok=True)
     assert os.path.isdir(out_folder), f"{out_folder} not found, create then run"
     name = makename(name, speaker, language)
 
@@ -64,9 +74,13 @@ def run_installed_bark(text, out_folder="/home/data/Language", name="bark_genera
     print(f"generating audio {name} for text \n{text}\n\npreloading models")
     preload_models()
 
-    audio = []
     if isinstance(text, str):
         text = [text]
+    nbwords = sum([len(t.split()) for t in text])
+    _start = time.time()
+
+    audio = []
+
     print("generating audio")
     for i, sent in enumerate(text):
         audio += [generate_audio(sent,  history_prompt=speaker)]
@@ -75,13 +89,21 @@ def run_installed_bark(text, out_folder="/home/data/Language", name="bark_genera
     audio = np.concatenate(audio)
 
     print(f"writing {name}")
+    print(f" processed {nbwords} in {round(time.time()-_start)} seconds")
     write_wav(os.path.join(out_folder, name), SAMPLE_RATE, audio)
+
+
     return audio
 
 
 
-def run_from_transformers(text, out_folder="/home/data/Language", voice_preset = "v2/en_speaker_6",  name="bark_generation.wav"):
-    assert os.path.isdir(out_folder), f"{out_folder} not found, create then run"
+def run_from_transformers(text, out_folder=f"{DATA_HOME}/Language", voice_preset = "v2/en_speaker_6",  name="bark_generation.wav"):
+    """ from huggingface transformers    
+    """
+    # pylint: disable=import-outside-toplevel
+    # pylint: disable=no-name-in-module
+    from transformers import AutoProcessor, BarkModel
+    os.makedirs(out_folder, exist_ok=True)
     name = voice_preset.replace("/", "_").join(osp.splitext(name))
     print(f"generating audio {name} for text \n{text} with transformers\n\npreloading models")
 
@@ -96,20 +118,23 @@ def run_from_transformers(text, out_folder="/home/data/Language", voice_preset =
     return audio_array
 
 if __name__ == '__main__':
+
     # usage   $ python runbark.py <text> <out_folder> <out_name
-    TEXT = """Understanding the neural code in the brain has long been driven by studying feed-forward architec-
-    tures, starting from Hubel and Wiesel’s famous proposal on the origin of orientation selectivity in
-    primary visual cortex"""
-    OUT_FOLDER = "/home/data/Language"
-    OUT_NAME = "bark_generation.wav"
+    # TEXT = """Understanding the neural code in the brain has long been driven by studying feed-forward architec-
+    # tures, starting from Hubel and Wiesel’s famous proposal on the origin of orientation selectivity in
+    # primary visual cortex"""
+
+    TEXT = osp.abspath(osp.join(osp.dirname(__file__),"../abstracts/audiolm_abs.txt"))
+    OUT_FOLDER = f"{DATA_HOME}/Language"
+    OUT_NAME = f"barkreading_{osp.splitext(osp.basename(TEXT))[0]}.wav"
+
+
     if len(sys.argv) > 1 and sys.argv[1] != "_":
         TEXT = sys.argv[1]
     if len(sys.argv) > 2 and sys.argv[2] != "_":
         OUT_FOLDER = sys.argv[2]
     if len(sys.argv) > 3:
         OUT_NAME = sys.argv[3]
-    if not osp.isdir(OUT_FOLDER):
-        print(f"folder <{OUT_FOLDER}> not found, creating  <{osp.expanduser('~/bark_out')}>")
-        os.makedirs(osp.expanduser('~/bark_out'), exist_ok=True)
-    run_installed_bark(TEXT, OUT_FOLDER)
+
+    run_installed_bark(TEXT, OUT_FOLDER, OUT_NAME)
     run_from_transformers(TEXT, OUT_FOLDER)

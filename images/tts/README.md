@@ -8,6 +8,7 @@ Fast, easy to run experimental code mage includes script adapted from their READ
 * Wang et al 2023 [Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers](https://arxiv.org/abs/2301.02111) https://github.com/facebookresearch/encodec
 * https://github.com/karpathy/nanoGPT 
 
+
 Example
 ```python
 cd scripts && python
@@ -22,8 +23,11 @@ audio = run_installed_bark(name="FastSpeech_Abstract.wav", text="/home/data/Lang
 
 
 3. FastSpeech2
-
 https://github.com/ming024/FastSpeech2
+* Ren et al 2022 [FASTSPEECH 2: FAST AND HIGH-QUALITY END-TO-END TEXT TO SPEECH](https://arxiv.org/pdf/2006.04558.pdf)
+
+* FastSpeech2 tests from transformers and fairseq https://huggingface.co/facebook/fastspeech2-en-ljspeech 
+    `python run scripts/run_hugfastspeech2.py`
 
 ## DEPRECATED - codes still in build and Dockerfile uncomment if appear useful
 3. https://github.com/coqui-ai/TTS. Collection of vocoders, converters, and audio models. Messy programming, unclear parameters and results. Keeping it here just in case one of the models results in something useful. Unless it gets any clearner: deprecate

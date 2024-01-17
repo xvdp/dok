@@ -1,7 +1,8 @@
-
-
 """
-TODO read pdf get footnotes too
+WIP/
+TODO read pdf get footnotes
+read pdf equations
+
 """
 from typing import Union
 import os.path as osp

@@ -28,7 +28,6 @@ if [ $# -eq 0 ]
 fi
 
 source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
-source ../utils.sh
 
 ROOT=$GIT_ROOT
 GITS=(NVlabs/nvdiffrast pytorch/vision)

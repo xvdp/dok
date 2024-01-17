@@ -9,7 +9,7 @@
 
 # defaults
 source ../../config.sh  # provides constants GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
-source ../utils.sh      # provides functions ASSERT_DIR() ASSERT_FILE(), MAKE_IMAGE_NAME()
+# source ../utils.sh      # provides functions ASSERT_DIR() ASSERT_FILE(), MAKE_IMAGE_NAME()
 ROOT="${GIT_ROOT}/Language"
 TAG="latest"
 BASEIMAGE="xvdp/cuda1210-ubuntu2204_ssh_mamba_torch"
@@ -25,8 +25,8 @@ BASEIMAGE="xvdp/cuda1210-ubuntu2204_ssh_mamba_torch"
 # 3. suno-ai/bark, easy to run - run with script/runbark.py - interesting qualities, pretrained
 # 4. lucidrains/audiolm-pytorch - bark is an offshoot of this one
 
-PROJECTS=(TTS/bark TTS/audiolm-pytorch)      
-GITS=(suno-ai/bark lucidrains/audiolm-pytorch)
+PROJECTS=(TTS/bark TTS/audiolm-pytorch fairseq)      
+GITS=(suno-ai/bark lucidrains/audiolm-pytorch facebookresearch/fairseq)
 HERE=`dirname "$(realpath "$0")"`
 GITROOT=https://github.com
 

@@ -4,14 +4,14 @@
 # further wrapped with ./dokrun -i imagename
 
 
-# identical to `docker run` with extra arg `--cache` which maps to env and volume: -e and -v
+# extension `docker run` with extra arg `--cache` which maps to env and volume: -e and -v
 # to names and paths, with the purpose of replacing ~/.cache with a mounted volume for selected env variables
+source config.sh # PROVIDES ENVS: linked to cache
 
-
-# DEFINE Docker ENV Variables, new ENV require a names/paths pair
-names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME)
+# DEFINE Docker ENV Variables, new ENV require a names/paths pair < moved to config
+# names=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME)
 # DEFINE local subfolders of "${WEIGHTS_ROOT}" defined in ./config.sh
-paths=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
+# paths=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
 
 
 docker_args=()
@@ -28,8 +28,8 @@ while [[ $# -gt 0 ]]; do
             read -ra parts <<< "${2}"
             cache_arg+=(-e "XDG_CACHE_HOME=${parts[1]}")
             i=0
-            for name in "${names[@]}"; do
-                cache_arg+=(-e "${name}=${parts[1]}/${paths[$i]}")
+            for name in "${ENVS[@]}"; do
+                cache_arg+=(-e "${name}=${parts[1]}/${ENV_HOMES[$i]}")
                 i=$((i + 1))
             done
 
@@ -46,9 +46,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+echo " ${0} expands to:"
 if [ "${#cache_arg[@]}" -eq 0 ]; then
+    echo "  docker run "${docker_args[@]}" "$image";"
     docker run "${docker_args[@]}" "$image"
 else
+    echo "  docker run "${docker_args[@]}" "${volume_arg[@]}" "${cache_arg[@]}" "$image";"
     docker run "${docker_args[@]}" "${volume_arg[@]}" "${cache_arg[@]}" "$image";
 fi
 

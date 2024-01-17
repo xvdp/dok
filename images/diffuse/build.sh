@@ -14,7 +14,6 @@
 
 # defaults
 source ../../config.sh   # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
-source ../utils.sh
 
 BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 MAINTAINER="xvdp"

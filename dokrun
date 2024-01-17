@@ -2,13 +2,15 @@
 # `./dokrun <args>`
 # docker run wrapper that maps ENV to local paths
 
-source config.sh
+source config.sh # provides WEIGHTS_ROOT, DATA_ROOT, WEIGHTS_HOME, DATA_HOME
 
-# local paths infors
 # optarg -h <local_path:container_path> # LOCAL CACHES to store torch_hub, huggingface_hub and dnnlib caches
-DCACHE="${WEIGHTS_ROOT}:/home/weights"
+# cache expand ./config.sh variables to both shared volumes and PATH in ./dockerrun and ./dockerglrun
+DCACHE="${WEIGHTS_ROOT}:${WEIGHTS_HOME}"
+
 # optarg -d  <local_path:container_path> # LOCAL DATA folder
-DDATA="${DATA_ROOT}:/home/data"
+DDATA="${DATA_ROOT}:${DATA_HOME}"
+# DATA_HOME is added to path
 
 # image infos
 # optarg -i <imagename> # change to run anoter image
@@ -39,13 +41,12 @@ if [ -z "$DNAME" ]; then
     DNAME="${elements[-1]}"
 fi
 
+echo "${0} expands to:"
 if docker images --format '{{.Repository}}:{{.Tag}}' | grep -q "^$DIMAGE"; then
     if [ "${DX11}" = true ]; then
-        echo docker run $DIMAGE with display
-        $( dirname $0 )/dockerglrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA --network=host -it --rm $DIMAGE
+        $( dirname $0 )/dockerglrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -e DATA_HOME=$DATA_HOME --network=host -it --rm $DIMAGE
     else
-        echo docker run $DIMAGE
-        $( dirname $0 )/dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA --network=host -it --rm $DIMAGE
+        $( dirname $0 )/dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -e DATA_HOME=$DATA_HOME --network=host -it --rm $DIMAGE
     fi
 else
     echo ERROR: docker image $DIMAGE not found, use one of ...

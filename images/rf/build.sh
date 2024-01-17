@@ -9,7 +9,6 @@
 
 # defaults
 source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
-source ../utils.sh
 ROOT="${GIT_ROOT}/RF"
 BASEIMAGE=xvdp/cuda1180-ubuntu2204_ssh_mamba_torch
 TAG="latest"
