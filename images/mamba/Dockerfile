@@ -15,10 +15,6 @@ FROM ${baseimage}
 ARG maintainer=xvdp
 LABEL MAINTAINER $maintainer
 
-ARG MAMBA_NAME=Mambaforge
-ARG VERSION=latest/download/${MAMBA_NAME}
-
-
 ENV CONDA_DIR=/opt/conda
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH=${CONDA_DIR}/bin:${PATH}
@@ -26,13 +22,14 @@ ENV PATH=${CONDA_DIR}/bin:${PATH}
 USER root
 RUN apt-get update > /dev/null && \
     apt-get install --no-install-recommends --yes \
+        apt-utils \
         wget bzip2 ca-certificates \
         git \
         # tini \
         > /dev/null && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/${VERSION}-$(uname)-$(uname -m).sh -O /tmp/mamba.sh && \
+    wget --no-hsts --quiet "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -O /tmp/mamba.sh && \
     /bin/bash /tmp/mamba.sh -b -p ${CONDA_DIR} 
 
 RUN rm /tmp/mamba.sh && \
