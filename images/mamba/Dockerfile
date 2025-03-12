@@ -40,6 +40,11 @@ RUN rm /tmp/mamba.sh && \
 RUN echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> /etc/skel/.bashrc && \
     echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc
 
+# TODO validate that this works wrt https://github.com/conda-forge/miniforge
+# source "${HOME}/conda/etc/profile.d/conda.sh"
+# For mamba support also run the following command
+# source "${HOME}/conda/etc/profile.d/mamba.sh"
+
 # add all users permission to install on conda
 RUN chmod -R 777 $CONDA_DIR && mamba init
 # reopen shell

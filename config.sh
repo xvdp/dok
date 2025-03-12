@@ -2,6 +2,10 @@
 # General project variables
 # Modify to match environment
 #
+_A="\e[0m"
+_G="\e[34m"
+_R="\e[31m"
+_B="\e[36m"
 
 ASSERT_DIR () {
     if [ ! -d "${1}" ]; then
@@ -54,7 +58,7 @@ ASSERT_DIR "${GIT_ROOT}" "Adjust 'GIT_ROOT' in file: ${0}"
 ASSERT_DIR "${WEIGHTS_ROOT}" "Adjust 'WEIGHTS_ROOT' in file: ${0}"
 ASSERT_DIR "${DATA_ROOT}" "Adjust 'DATA_ROOT' in file: ${0}"
 
-
+# WHAT ABOUT XDG_CACHE_HOME
 # CACHE ENVS and local paths: Used by ./dockerrun and ./dockerglrun
 ENVS=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME)
 ENV_HOMES=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
@@ -62,3 +66,14 @@ ENV_HOMES=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
 # CONTAINER VOLUMES: used by ./dokrun
 WEIGHTS_HOME=/home/weights
 DATA_HOME=/home/data
+
+
+#alias lastfile='f() { ls -1t $1 | head -n1; unset -f f; }; f'
+
+LAST() {
+    ls -lt $1 | head -n1
+}
+
+#alias lastfile='f() { ls -1t $1 | head -n1; unset -f f; }; f'
+
+alias lastfile='f(){ patt=${1:-"*"}; find . -maxdepth 1 -type f -name $patt | sort -t | head -n1; unset -f f; }; f'

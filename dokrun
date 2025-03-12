@@ -2,6 +2,8 @@
 # `./dokrun <args>`
 # docker run wrapper that maps ENV to local paths
 
+
+
 source config.sh # provides WEIGHTS_ROOT, DATA_ROOT, WEIGHTS_HOME, DATA_HOME
 
 # optarg -h <local_path:container_path> # LOCAL CACHES to store torch_hub, huggingface_hub and dnnlib caches
@@ -24,6 +26,34 @@ DCPU="0-10"  # optarg -c <valid cpu range>
 DSHM=10g     # optarg -m <shared memory> # increased from default
 DX11=false
 
+if [ $# -lt 2 ]
+  then
+    echo -e " ${_G}>>> docker context ls${_A}"
+    docker context ls
+    echo -e " ${_G}>>> docker images${_A}"
+    docker images
+    echo -e " ${_B}>>> docker ps${_A}"
+    docker ps
+    echo "--- COMMANDS ON RUNNING CONTAINERS ---"
+    echo "  docker attach <name>  # attach to a running process"
+    echo "  docker exec -it <name>  jupyter notebook --allow-root -y --no-browser --ip=0.0.0.0 --port=32778"
+    echo "  # execute new process on container: python, jupyter notebook, /bin/bash"
+    echo
+    echo -e "${_R}--- NO ARGS PASSED, 'dokrun' wraps './dockerrun' and 'docker run' mapping env paths and volumes --- usage"
+    echo -e "${_G}>>> dokrun -i <image_name>"
+    echo "optargs: -n <name>                      container name [default image_name.split('_')[-1]]"
+    echo "         -u <valid user id>             set user id [default here ${DUSER}] users definied in _shh BASEIMAGE"
+    echo "         -g <cuda device>               set cuda device [default here ${DGPU}]"                
+    echo "         -c <cpu range>                 set cpus or cpu range [default here ${DCPU}]"  
+    echo "         -m <shared memory>             increase shared memory [default here ${DSHM}]"  
+    echo "         -h <WEIGHTS_ROOT:WEIGHS_HOME>  volume and env mapping ['config.sh' default: ${DCACHE}]"
+    echo "         -d <DATA_ROOT:DATA_HOME>       volume and env mapping ['config.sh' default: ${DDATA}]"
+    echo -e "         -x no args                     use X11 display to run graphical apps, eg. matplotlib, ffmpeg${_A}"
+  
+    exit
+fi
+
+
 while getopts u:n:g:c:h:d:v:m:i:x option; do case ${option} in
 i) DIMAGE=${OPTARG};;
 u) DUSER=${OPTARG};;
@@ -44,9 +74,9 @@ fi
 echo "${0} expands to:"
 if docker images --format '{{.Repository}}:{{.Tag}}' | grep -q "^$DIMAGE"; then
     if [ "${DX11}" = true ]; then
-        $( dirname $0 )/dockerglrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -e DATA_HOME=$DATA_HOME --network=host -it --rm $DIMAGE
+        $( dirname $0 )/dockerglrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -e DATA_HOME=$DATA_HOME -e WEIGHTS_HOME=$WEIGHTS_HOME --network=host -it --rm $DIMAGE
     else
-        $( dirname $0 )/dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -e DATA_HOME=$DATA_HOME --network=host -it --rm $DIMAGE
+        $( dirname $0 )/dockerrun --user $DUSER --name $DNAME --gpus device=$DGPU --cpuset-cpus=$DCPU --shm-size $DSHM --cache $DCACHE -v $DDATA -e DATA_HOME=$DATA_HOME -e WEIGHTS_HOME=$WEIGHTS_HOME --network=host -it --rm $DIMAGE
     fi
 else
     echo ERROR: docker image $DIMAGE not found, use one of ...
