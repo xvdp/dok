@@ -8,8 +8,13 @@ This is intended for development, **not for deployment**.
 
 Most Docker examples are intended for deployment, but containerization can also be useful for development, the purpose of this project. Deployment projects do not need sudo apt access or multiuser envinronments and require the small footprint. 
 To create a deployment project based on this strip down to only the necessary installs, the images on this project would be too large for efficient deployment. 
+## Installation
+* image OS may be different or ahead from machine OS.
+* requires docker installed and configured.
+* machine graphic driver $\geq$ driver req'd. by image
+* install cuda toolkit https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 
-## Structure of the project
+## Project structure
 OS and CUDA version are passed as baseimage at build time.
 
 Every image takes in a baseimage arg to enable rebuilding and testing projects on new code easily.
@@ -19,7 +24,7 @@ FROM=${baseimage}
 ```
 Designed to be modular with nested images.
 ```
-xvdp/cuda:11.8.0-devel-ubuntu22.04    -> since nvidia regularly deprecates images, I store them to docker xvdp
+$BASEIMAGE     OS and Graphics driver, can be passed to build scipts -b or 
     ssh                     auth. base (ssh, ports, users, .bashrc) rebuild stack on authorized_keys change
         mamba
             torch           torch base image (torch 2.0.1, nvdiffrast, drjit, transformers, diffusion, jupyter)
@@ -34,64 +39,23 @@ xvdp/cuda:12.1.0-devel-ubuntu22.04
             torch       torch >= 2.1
                 tts:        text to speech (coqui-ai/TTS, suno-ai/bark)
 ```
+# images
 
-Build Scripts:
-* Example projects, **images/\<project\>**, contain a `build.sh` script and a `Dockerfile`
-* `./config.sh` contains local folders and user info, sourced by build.sh. Modify to own paths.
-* `./images/utils.sh` common bash utilities, sourced by build.sh
+## ./images/ssh  TODO Q. is this still necessary in view of cudatoolkit rootless mode? A. not sure, but works
+Base to other images.
+Build command: `./build.sh -b <baseimage>`  or `./images/buildall.sh`
+Based on https://gist.github.com/mlamarre/a3ac761bb2e47162b73e72ac7d5cc395.
 
-To prevent unnecessary downloads:
-* Github projects are downloaded and cached locally in `build.sh` scripts, instead of pulling on Dockerfile.
-* Env variables (eg. TORCH_HOME, etc.) to cache container runtime installs are called `./dockerrun` and other shortcut scripts.
+****
 
-Run Scripts
-* `./dockerrun <args> --cache <shared vol>:<mounted vol>` Similar to `docker run` with extra arg `--cache`.  The cache arg creates a volume argument and environenment variables inside the container which can be used as commond download loctions. Default environments are created for **TORCH_HOME, TORCH_EXTENSIONS_DIR, DNNLIB_CACHE_DIR, HUGGINGFACE_HOME, TTS_HOME**. 
-* `./dockerglrun <args> --cache <shared vol>:<mounted vol>` Similar to `./dockerrun` for local .Xauth mapping for gl dependent projects, e.g. `_gans`
-* `./dokrun -i ``./runrf`, `./runlang`, etc. shortcut scripts do `dockerrun` for specific projects to further simplify docker run verbosity
+Creates users, with **authorized_keys**, adds .bashrc, exposes port and adds to `/etc/ssh/sshd_config`.
+* fetches local root with `authorized_keys` from local [ default : ~/.ssh ] modified by `-r` 
+* **If autorized keys are modified, the entire stack requires rebuilding.**
+Requires OS, docker and graphics driver on machines.
 
-```bash
-SHR=\mnt\MyDrive\weights
-VOL=\home\weights
-IMG=<maintainer\dockerimage:tag>
-bash dockerrun --user 1000 -it --rm --cache $SHR:$VOL $IMG
-# is similar to
-docker run --user 1000 -it --rm -v $SHR:$VOLs -e TORCH_HOME="${VOL}\torch" -e HUGGINGFACE_HOME="${VOL}\huggingface" $IMG
-# alternatively create shortcut, see example script
-bash runlang
-```
-
-## Notes | Caveats
-
-* install docker first
-* not tested with Windows
-
-## TODO
-* vscode development
-* enable remote graphical interface, X11 forwarding thru ssh
-<!-- * add local language docker images e.g. https://hub.docker.com/r/ollama/ollama -->
-
-<!-- how to change docker tags and backup external image
-docker tag nvidia/cuda:11.8.0-devel-ubuntu22.04  xvdp/cuda:11.8.0-devel-ubuntu22.04 
-docker push xvdp/cuda:11.8.0-devel-ubuntu22.04
--->
-
----
-# base images
-
-## ./images/ssh
-Base to other images, creates users and ssh access. Bilt over OS and graphic driverrs, defines users incorporates shh authorized_keys in folder, adds .bashrc, exposes port and adds to `/etc/ssh/sshd_config`. Based on https://gist.github.com/mlamarre/a3ac761bb2e47162b73e72ac7d5cc395.
-
-`./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04`
-
-creates: `xvdp/cuda1180-ubuntu2204_ssh:latest`
-
-requires
-* `-b baseimage   ` e.g. nvidia/cuda:11.8.0-devel-ubuntu22.04
-* local root with `authorized_keys` file with valid public keys [ default : ~/.ssh ] modified by `-r` 
-
-**NOTE: If autorized keys are modified, the entire stack requires rebuilding.**
-
-optional
+Args. defaults, can be set in `dok/.confg.sh` or in `build.sh`
+* `-b baseimage   ` e.g. nvidia/cuda:12.8.0-devel-ubuntu24.04 Tested with Ubuntu 18.04 to 24.04.
+* `-r   `   authorized keys file 
 * `-m   `   maintainer, default: `xvdp`
 * `-n   `   name,  default: baseimage
 * `-t   `   tag, default `latest`
@@ -99,7 +63,9 @@ optional
 *  `bashrc` file in Dockerfile folder. copies to `$HOME/.bashrc` if not present build.sh will create empty
 
 Generates a `<mantainer>/<name>_shh:<tag>`
-* with Creates 3 users [`1000` `1001` `1002`] `appuser`, `appuser1`, `appuser2` part of `docker` group '999'
+* with Creates 3 users [`1001` `1002` `1003`] `z`, `harveer`, `srivinasa` part of `docker` group.
+    * GID and usernames in `images/ssh/Dockerfile`
+    * **if user gids exist in baseimage build ffails, since ubuntu 24.04 user 1000 is generated**
 * if `bashrc` file exists in Dockerfile parent folder -> `$HOME/.bashrc` 
 * exposes `<port>`
     * to config (docker image inspect \<maintainer\>/\<name\>:\<tag\>  -f '{{ .Config.ExposedPorts }}') 
@@ -107,6 +73,18 @@ Generates a `<mantainer>/<name>_shh:<tag>`
     * see section on running 
 
 Should be built before any docker image that requires `$HOME`.
+### Test
+```
+$ ./build.sh -b "nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+$ image="xvdp/cuda1263-cudnn-ubuntu2404_ssh"
+$ docker run --user 1001 -it --rm --gpus all $image # user z::1001 defined in Dockerfile
+
+nvidia-smi        # shows cards, if fail debug cuda toolkid installation
+cat /etc/passwd   # shows users including those defined in Dockerfile
+dockergid=$(getent group | grep docker | cut -d: -f 3)  # docker group id
+id -G             # shows user groups: 1001 and $dockergid
+sudo apt update   # user 1001 is sudoer, should work
+```
 
 ---
 ## ./images/mamba
@@ -126,6 +104,53 @@ optional
 * `-t   `   tag, default `latest`
 
 Adds mamba installation on /opt/conda and gives all users write permissions.
+
+
+## Build Scripts:
+
+* `./config.sh` contains userinfo sourced by build.sh and buildall.sh Modify to own paths.
+    * `BASEIMAGE="nvidia/cuda:12.1.0-devel-ubuntu22.04"` # OS and CUDA <= CUDA version on machine
+    * `MAINTAINER=xvdp`
+    * `DEFAULTTAG=latest`# image name will be $MAINTAINER/<ImageName>$DEFAULTTAG
+* `./buildall.sh` Builds a pyramid of images sourcing varialbes from `config.sh`
+
+
+* Example projects, **images/\<project\>**, contain a `build.sh` script and a `Dockerfile`
+
+* `./images/utils.sh` common bash utilities, sourced by build.sh
+
+To prevent unnecessary downloads:
+* Github projects are downloaded and cached locally in `build.sh` scripts, instead of pulling on Dockerfile.
+* Env variables (eg. TORCH_HOME, etc.) to cache container runtime installs are called `./dockerrun` and other shortcut scripts.
+
+Run Scripts
+* `./dockerrun <args> --cache <shared vol>:<mounted vol>` Similar to `docker run` with extra arg `--cache`.  The cache arg creates a volume argument and environenment variables inside the container which can be used as commond download loctions. Default environments are created for **TORCH_HOME, TORCH_EXTENSIONS_DIR, DNNLIB_CACHE_DIR, HUGGINGFACE_HOME, TTS_HOME**. 
+* `./dockerglrun <args> --cache <shared vol>:<mounted vol>` Similar to `./dockerrun` for local .Xauth mapping for gl dependent projects, e.g. `_gans`
+* `./dokrun -i ``./runrf`, `./runlang`, etc. shortcut scripts do `dockerrun` for specific projects to further simplify docker run verbosity
+
+```bash
+SHR=\mnt\MyDrive\weights
+VOL=\home\weights
+IMG=<maintainer\dockerimage:tag>
+bash dockerrun --user 1001 -it --rm --cache $SHR:$VOL $IMG
+# is similar to
+docker run --user 1001 -it --rm -v $SHR:$VOLs -e TORCH_HOME="${VOL}\torch" -e HUGGINGFACE_HOME="${VOL}\huggingface" $IMG
+# alternatively create shortcut, see example script
+bash runlang
+```
+
+## TODO
+* vscode development
+* enable remote graphical interface, X11 forwarding thru ssh
+<!-- * add local language docker images e.g. https://hub.docker.com/r/ollama/ollama -->
+
+<!-- how to change docker tags and backup external image
+docker tag nvidia/cuda:11.8.0-devel-ubuntu22.04  xvdp/cuda:11.8.0-devel-ubuntu22.04 
+docker push xvdp/cuda:11.8.0-devel-ubuntu22.04
+-->
+
+---
+
 
 ---
 ## ./images/torch

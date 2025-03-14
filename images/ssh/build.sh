@@ -25,11 +25,15 @@
 #  -t (tag)                 # default: latest
 #  -p (port)                # default: 32778  # port to be exposed, needs to be opened in the server as well
 
+source ../config.sh
+# source ../utils.sh
+
 # defaults
 ROOT=~/.ssh   # overwrite or pass -r <valid folder with authorized_keys file>
 PORT=32778
 MAINTAINER="xvdp"
 TAG="latest"
+DOCKERGID=$( cat /etc/group | grep docker | cut -d: -f 3)
 
 if [ $# -eq 0 ]
   then
@@ -44,22 +48,28 @@ m) MAINTAINER=${OPTARG};;
 t) TAG=${OPTARG};;
 p) PORT=${OPTARG};;
 r) ROOT=${OPTARG};;       # folder with authorized_keys file
+d) DOCKERGID=${OPTARG};;       # folder with authorized_keys file
 esac; done
+
+if [ -z $DOCKERGID ]; then
+    echo "no docker group found (cat /etc/group | grep docker), or passed with arg -d DOCKERGID;"
+    exit
+fi
 
 # this is crap code - baseimage can be passed as arg or optarg!
 if [ -z $BASEIMAGE ]; then
     echo "no base image supplied using arg $1"
     BASEIMAGE=$1
 fi
-[ -z $NAME ] && NAME=$BASEIMAGE;
+
+ASSERT_IMAGE_EXISTS $BASEIMAGE 
+
+# [ -z $NAME ] && NAME=$BASEIMAGE;
 
 if [ ! -d "${ROOT}" ]; then
   echo pass valid -r ROOT kwarg .authorized_keys are found
   exit
 fi
-
-source ../utils.sh
-NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
 
 
 echo "${ROOT}/authorized_keys"
@@ -70,9 +80,22 @@ else
     exit
 fi
 
-echo BASE_IMAGE: $BASEIMAGE
-echo "OUT IMAGE: "$NAME
+NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
 
-docker build --build-arg baseimage=$BASEIMAGE --build-arg port=$PORT --build-arg maintainer=$MAINTAINER -t $NAME .
+echo "BASEIMAGE       ${BASEIMAGE} "
+echo "MAINTAINER      ${MAINTAINER} "
+echo "TAG             ${TAG} "
+echo "OUT IMAGE:      ${NAME}"
+
+docker build --build-arg baseimage=$BASEIMAGE --build-arg port=$PORT --build-arg maintainer=$MAINTAINER --build-arg dockerGID=$DOCKERGID -t $NAME .
+
+# docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
 
 rm -rf authorized_keys
+
+#--build-arg userGIDS="${USERGIDS}" 
+
+# check users             cat /etc/passwd
+# current user            id -u
+# current user groups     id -G
+# docker group users      getent group docker

@@ -13,7 +13,7 @@
 ARG baseimage
 FROM ${baseimage}
 ARG maintainer=xvdp
-LABEL MAINTAINER $maintainer
+LABEL MAINTAINER=$maintainer
 
 ENV CONDA_DIR=/opt/conda
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8

@@ -4,7 +4,22 @@ ARG baseimage
 FROM ${baseimage}
 ARG maintainer=xvdp
 ARG port=32778
+# set pass docker gid docker run ... --group-add $(getent group docker | cut -d: -f3)
+ARG dockerGID=999
+# USERS: build will fail if these conflcit with
+# getent group | cut -d: -f 3 
+# since ubuntu 24.04 ubuntu docker image sets usergroupid 1000
+ARG userGID1=1001
+ARG userGID2=1002
+ARG userGID3=1003
+ARG userNAME1=z
+ARG userNAME2=harveer
+ARG userNAME3=srinivasa
+
+
 LABEL MAINTAINER $maintainer
+
+RUN echo ${baseimage}
 
 # TODO: possible confusion, clarify sshd_config vs ufw 
 # replace Port 22 -> 32778 in shd_config : to run with network=host
@@ -17,50 +32,49 @@ EXPOSE $port
 ENV PORT $port
 CMD ["sudo","/usr/sbin/sshd", "-D"]
 
-# create 3 users 1000 1001 1002 with group 999 (docker) to their profiles
+# create users specifie in ARGS
 # if shared folders with rwx on group docker are accessible to all
-# TODO could add --build-arg=sharedgroup ARG sharedgroup=999
 # alt, can add to groups on docker run ... --group-add $(getent group docker | cut -d: -f3)
-RUN groupadd docker -g 999 \
-&& groupadd appuser -g 1000 && useradd -u 1000 appuser -g appuser && usermod -G 999 appuser \
-&& groupadd appuser1 -g 1001 && useradd -u 1001 appuser1 -g appuser1 && usermod -G 999 appuser1 \
-&& groupadd appuser2 -g 1002 && useradd -u 1002 appuser2 -g appuser2 && usermod -G 999 appuser1 \
-&& mkdir -p /home/appuser/.vscode-server /home/appuser/.vscode-server-insiders \
-&& chown appuser:appuser /home/appuser \
-&& chown appuser:appuser /home/appuser/.vscode-server* \
-&& mkdir -p /home/appuser1/.vscode-server /home/appuser1/.vscode-server-insiders \
-&& chown appuser1:appuser1 /home/appuser1 \
-&& chown appuser1:appuser1 /home/appuser1/.vscode-server* \
-&& mkdir -p /home/appuser2/.vscode-server /home/appuser2/.vscode-server-insiders \
-&& chown appuser2:appuser2 /home/appuser2 \
-&& chown appuser2:appuser2 /home/appuser2/.vscode-server* \
-&& apt-get update \
+RUN groupadd docker -g $dockerGID \
+&& groupadd $userNAME1 -g $userGID1 && useradd -u $userGID1 $userNAME1 -g $userNAME1 && usermod -G $dockerGID $userNAME1 \
+&& groupadd $userNAME2 -g $userGID2 && useradd -u $userGID2 $userNAME2 -g $userNAME2 && usermod -G $dockerGID $userNAME2 \
+&& groupadd $userNAME3 -g $userGID3 && useradd -u $userGID3 $userNAME3 -g $userNAME3 && usermod -G $dockerGID $userNAME3
+RUN mkdir -p /home/$userNAME1/.vscode-server /home/$userNAME1/.vscode-server-insiders \
+&& chown $userNAME1:$userNAME1 /home/$userNAME1 \
+&& chown $userNAME1:$userNAME1 /home/$userNAME1/.vscode-server* \
+&& mkdir -p /home/$userNAME2/.vscode-server /home/$userNAME2/.vscode-server-insiders \
+&& chown $userNAME2:$userNAME2 /home/$userNAME2 \
+&& chown $userNAME2:$userNAME2 /home/$userNAME2/.vscode-server* \
+&& mkdir -p /home/$userNAME3/.vscode-server /home/$userNAME3/.vscode-server-insiders \
+&& chown $userNAME3:$userNAME3 /home/$userNAME3 \
+&& chown $userNAME3:$userNAME3 /home/$userNAME3/.vscode-server* 
+RUN apt-get update \
 && apt-get install -y sudo \
-&& echo appuser ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/appuser \
-&& chmod 0440 /etc/sudoers.d/appuser \
-&& echo appuser1 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/appuser1 \
-&& chmod 0440 /etc/sudoers.d/appuser1 \
-&& echo appuser2 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/appuser2 \
-&& chmod 0440 /etc/sudoers.d/appuser2 \
-&& usermod -s /bin/bash appuser \
-&& usermod -s /bin/bash appuser1 \
-&& usermod -s /bin/bash appuser2
+&& echo $userNAME1 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$userNAME1 \
+&& chmod 0440 /etc/sudoers.d/$userNAME1 \
+&& echo $userNAME2 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$userNAME2 \
+&& chmod 0440 /etc/sudoers.d/$userNAME2 \
+&& echo $userNAME3 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$userNAME3 \
+&& chmod 0440 /etc/sudoers.d/$userNAME3 \
+&& usermod -s /bin/bash $userNAME1 \
+&& usermod -s /bin/bash $userNAME2 \
+&& usermod -s /bin/bash $userNAME3
 
 # bashrc needs could be different for all 3
-ADD --chown=appuser:appuser bashrc /home/appuser/.bashrc
-ADD --chown=appuser1:appuser1 bashrc /home/appuser1/.bashrc
-ADD --chown=appuser2:appuser2 bashrc /home/appuser2/.bashrc
+ADD --chown=$userNAME1:$userNAME1 bashrc /home/$userNAME1/.bashrc
+ADD --chown=$userNAME2:$userNAME2 bashrc /home/$userNAME2/.bashrc
+ADD --chown=$userNAME3:$userNAME3 bashrc /home/$userNAME3/.bashrc
 
-# TODO should everyone build their own? otherwise workdir for all is the same
-# TODO add -u -> --build-arg USERNAME=  to the build process
-ARG USERNAME=appuser
+# TODO
+# users 2 and 3 need to also bring in their authorized keys
+ARG USERNAME=$userNAME1
 # add authorized_keys to user .ssh
 # only allow log in from that user
 USER $USERNAME
 
 RUN mkdir -p /home/$USERNAME/.ssh
 WORKDIR /home/$USERNAME
-ADD --chown=appuser:appuser authorized_keys /home/$USERNAME/.ssh
+ADD --chown=$userNAME1:$userNAME1 authorized_keys /home/$USERNAME/.ssh
 
 RUN chmod 600 /home/$USERNAME/.ssh/authorized_keys
 RUN chmod 700 /home/$USERNAME/.ssh

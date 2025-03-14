@@ -11,6 +11,7 @@ if [ $# -eq 0 ]
     echo "docker baseimage required: $ bash build.sh <base_img> [<img_name>]"
     exit
 fi
+source ../config.sh
 
 # defaults
 MAINTAINER="xvdp"
@@ -31,10 +32,13 @@ fi
 # [ -z $TAG ] && TAG="latest";
 [ -z $NAME ] && NAME=$BASEIMAGE;
 
-source ../utils.sh
+
 NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
 
-echo BASE_IMAGE=$BASEIMAGE
-echo "NAME="$NAME
+echo "BASEIMAGE       ${BASEIMAGE} "
+echo "MAINTAINER      ${MAINTAINER} "
+echo "TAG             ${TAG} "
+echo "OUT IMAGE:      ${NAME}"
+
 
 docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .

@@ -7,6 +7,9 @@
 # 2. cat ~/id_rsa.pub >> ~/$AUTH_ROOT/authorized_keys
 # 3. ./buildall.sh
 
+source ./config.sh  # provides $BASEIMAGE, $MAINTAINER, $DEFAULTTAG
+
+
 AUTH_ROOT=~/.ssh
 PROJ_ROOT=~/work/gits
 if [ ! -d "${AUTH_ROOT}" ]; then
@@ -18,9 +21,24 @@ if [ ! -d "${PROJ_ROOT}" ]; then
   exit
 fi
 
-cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04 -r $AUTH_ROOT
-cd ../mamba && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh
-cd ../torch && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba -r $PROJ_ROOT
+
+echo "Building stack of images based on ${BASEIMAGE} > "
+
+PROJECTNAME=ssh
+cd $PROJECTNAME && ./build.sh -b $BASEIMAGE -r $AUTH_ROOT -m $MAINTAINER -t $DEFAULTTAG -u "${USERGIDS}"
+
+
+BASEIMAGE=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $DEFAULTTAG)
+echo $BASEIMAGE
+PROJECTNAME=mamba
+cd ../$PROJECTNAME && ./build.sh -b $BASEIMAGE -m $MAINTAINER -t $DEFAULTTAG -r $PROJ_ROOT
+
+# BASEIMAGE=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $DEFAULTTAG)
+# PROJECTNAME=torch
+
+# cd ssh && ./build.sh -b nvidia/cuda:11.8.0-devel-ubuntu22.04 -r $AUTH_ROOT
+# cd ../mamba && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh
+# cd ../torch && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba -r $PROJ_ROOT
 # cd ../diffuse && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -r "${PROJ_ROOT}/Diffusion"
 # cd ../lang && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -r "${PROJ_ROOT}/Language"
 # cd ../gans && ./build.sh -b xvdp/cuda1180-ubuntu2204_ssh_mamba_torch -r "${PROJ_ROOT}/GANs"
