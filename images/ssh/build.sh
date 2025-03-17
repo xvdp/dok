@@ -48,7 +48,7 @@ m) MAINTAINER=${OPTARG};;
 t) TAG=${OPTARG};;
 p) PORT=${OPTARG};;
 r) ROOT=${OPTARG};;       # folder with authorized_keys file
-d) DOCKERGID=${OPTARG};;       # folder with authorized_keys file
+d) DOCKERGID=${OPTARG};; 
 esac; done
 
 if [ -z $DOCKERGID ]; then

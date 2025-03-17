@@ -24,7 +24,10 @@ RUN echo ${baseimage}
 # TODO: possible confusion, clarify sshd_config vs ufw 
 # replace Port 22 -> 32778 in shd_config : to run with network=host
 RUN apt-get update && apt-get install -y openssh-server
-RUN sed -i "s/#Port 22/Port ${port}/g" /etc/ssh/sshd_config
+
+
+
+
 RUN mkdir /var/run/sshd
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
@@ -80,4 +83,4 @@ RUN chmod 600 /home/$USERNAME/.ssh/authorized_keys
 RUN chmod 700 /home/$USERNAME/.ssh
 SHELL ["/bin/bash", "-c"]
 
-CMD [ "/bin/bash" ]
+# CMD [ "/bin/bash" ]

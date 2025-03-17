@@ -27,11 +27,16 @@ if [ $# -eq 0 ]
     exit
 fi
 
-source ../../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
+source ../config.sh  # provides GIT_ROOT, MAINTAINER, WEIGHTS_ROOT
 
 ROOT=$GIT_ROOT
-GITS=(NVlabs/nvdiffrast pytorch/vision)
+# GITS=(NVlabs/nvdiffrast pytorch/vision)
 TAG="latest"
+
+#
+#
+# https://pytorch.org/ install commands
+# cuda version has to be <=  cua version in machine
 
 while getopts b:n:m:t:r:g: option; do case ${option} in
 b) BASEIMAGE=${OPTARG};;
@@ -71,8 +76,25 @@ done
 cd -
 
 
-NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PWD $TAG)
-docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
+
+TORCH_VERSION=2.8
+TORCH_INSTALL_CMD="pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128"  # torch nightly cuda 12.8 
+
+TORCH_VERSION=2.6
+TORCH_INSTALL_CMD="pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118"                # torch 2.6 cuda 11.8
+
+TORCH_VERSION=2.6
+TORCH_INSTALL_CMD="pip3 install torch torchvision torchaudio"                # torch 2.6 cuda 12.4
+
+TORCH_VERSION=2.6
+TORCH_INSTALL_CMD="pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126"                # torch 2.6 cuda 12.6
+
+
+PROJECTNAME="${PWD}${TORCH_VERSION}"
+
+
+NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $TAG)
+docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER --build-arg userNAME1=z --build-arg TORCH_INSTALL_CMD="${TORCH_INSTALL_CMD}" -t $NAME .
 
 # cleanup temp projects
 for proj in "${PROJECTS[@]}"; do rm -rf "${proj}" ; done

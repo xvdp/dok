@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 BASEIMAGE="xvdp/cuda:11.8.0-devel-ubuntu22.04"
 BASEIMAGE="nvidia/cuda:12.1.0-devel-ubuntu22.04"
 BASEIMAGE="nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04"
-BASEIMAGE="nvidia/cuda:12.8.0-cudnn-devel-ubuntu24.04"
+# BASEIMAGE="nvidia/cuda:12.8.0-cudnn-devel-ubuntu24.04"
 
 
 # LOCAL or SOURCE VOLUMES # used by ./build.sh scripts
