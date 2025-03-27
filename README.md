@@ -41,21 +41,22 @@ xvdp/cuda:12.1.0-devel-ubuntu22.04
 ```
 # images
 
-## ./images/ssh  TODO Q. is this still necessary in view of cudatoolkit rootless mode? A. not sure, but works
-Base to other images.
-Build command: `./build.sh -b <baseimage>`  or `./images/buildall.sh`
+## ./images/ssh 
+Base to other images. Gives users authorized to access build machine ( from ~/.ssh/authorized_keys ) or -r authorized_keys
+* access to the shared docker images.
+* sudoer priviledge inside the docker images, necessary for develoment. 
+* exposes port and adds to `/etc/ssh/sshd_config`.
+
+
 Based on https://gist.github.com/mlamarre/a3ac761bb2e47162b73e72ac7d5cc395.
 
-****
-
-Creates users, with **authorized_keys**, adds .bashrc, exposes port and adds to `/etc/ssh/sshd_config`.
-* fetches local root with `authorized_keys` from local [ default : ~/.ssh ] modified by `-r` 
 * **If autorized keys are modified, the entire stack requires rebuilding.**
 Requires OS, docker and graphics driver on machines.
 
+Build command: `./build.sh -b <baseimage>`  or `./images/buildall.sh`
 Args. defaults, can be set in `dok/.confg.sh` or in `build.sh`
 * `-b baseimage   ` e.g. nvidia/cuda:12.8.0-devel-ubuntu24.04 Tested with Ubuntu 18.04 to 24.04.
-* `-r   `   authorized keys file 
+* `-r   `   authorized keys file, default .lo
 * `-m   `   maintainer, default: `xvdp`
 * `-n   `   name,  default: baseimage
 * `-t   `   tag, default `latest`
@@ -63,9 +64,9 @@ Args. defaults, can be set in `dok/.confg.sh` or in `build.sh`
 *  `bashrc` file in Dockerfile folder. copies to `$HOME/.bashrc` if not present build.sh will create empty
 
 Generates a `<mantainer>/<name>_shh:<tag>`
-* with Creates 3 users [`1001` `1002` `1003`] `z`, `harveer`, `srivinasa` part of `docker` group.
+* with 3 users [`1001` `1002` `1003`] `z`, `harveer`, `srivinasa` part of `docker` group.
     * GID and usernames in `images/ssh/Dockerfile`
-    * **if user gids exist in baseimage build ffails, since ubuntu 24.04 user 1000 is generated**
+    * **if user gids exist in baseimage build fails, since ubuntu 24.04 user 1000 is generated**
 * if `bashrc` file exists in Dockerfile parent folder -> `$HOME/.bashrc` 
 * exposes `<port>`
     * to config (docker image inspect \<maintainer\>/\<name\>:\<tag\>  -f '{{ .Config.ExposedPorts }}') 
@@ -74,15 +75,15 @@ Generates a `<mantainer>/<name>_shh:<tag>`
 
 Should be built before any docker image that requires `$HOME`.
 ### Test
-```
-$ ./build.sh -b "nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+```bash
+$ ./build.sh -b "nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04"
 $ image="xvdp/cuda1263-cudnn-ubuntu2404_ssh"
 $ docker run --user 1001 -it --rm --gpus all $image # user z::1001 defined in Dockerfile
 
-nvidia-smi        # shows cards, if fail debug cuda toolkid installation
+nvidia-smi        # shows cards, if fail debug cuda toolkit installation
 cat /etc/passwd   # shows users including those defined in Dockerfile
-dockergid=$(getent group | grep docker | cut -d: -f 3)  # docker group id
-id -G             # shows user groups: 1001 and $dockergid
+dig=$(getent group | grep docker | cut -d: -f 3)    # docker group id
+id -G             # shows user groups: 1001 and $dig
 sudo apt update   # user 1001 is sudoer, should work
 ```
 
@@ -105,6 +106,10 @@ optional
 
 Adds mamba installation on /opt/conda and gives all users write permissions.
 
+# Modifications:
+ - added images/config.yaml for builds and running / not replaced builds yet. requires yq `snap install yq`
+ - added images/docker_run.sh to 
+    example `./docker_run.sh config.yaml deepseek`
 
 ## Build Scripts:
 

@@ -2,10 +2,18 @@
 cd "$(dirname "$0")"
 
 # BASEIMAGE="xvdp/cuda:12.1.0-devel-ubuntu22.04"
+# UBUNTU 22.04 XVDP STORED
 BASEIMAGE="xvdp/cuda:11.8.0-devel-ubuntu22.04"
+
+# UBUNTU 22.04
 BASEIMAGE="nvidia/cuda:12.1.0-devel-ubuntu22.04"
-BASEIMAGE="nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04"
-# BASEIMAGE="nvidia/cuda:12.8.0-cudnn-devel-ubuntu24.04"
+BASEIMAGE="nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04"  # for deepseek v3 https://github.com/pytorch/vision?tab=readme-ov-file
+# BASEIMAGE="nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04"
+
+# # UBUNTU 24.04
+# BASEIMAGE="nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04" 
+# BASEIMAGE="nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04"
+
 
 
 # LOCAL or SOURCE VOLUMES # used by ./build.sh scripts
@@ -13,7 +21,7 @@ GIT_ROOT=~/work/gits    # folder where gits are cloned to
 WEIGHTS_ROOT=/mnt/Data/weights  # folder where project weights should be stored
 DATA_ROOT=/mnt/Data/data  # folder where project data should be stored
 MAINTAINER=xvdp
-DEFAULTUSER="1000"  # ssh precursor creates 1000, 1001, 1002
+DEFAULTUSER="1001"  # ssh precursor creates 1001, 1002, 1003
 DEFAULTTAG=latest
 
 
@@ -27,9 +35,16 @@ ENVS=(TORCH_HOME TORCH_EXTENSIONS_DIR DNNLIB_CACHE_DIR HUGGINGFACE_HOME TTS_HOME
 ENV_HOMES=("torch" "torch_extensions" "dnnlib" "huggingface" "tts")
 # WHAT ABOUT XDG_CACHE_HOME
 
+CONFIG="config.yaml"
+
 ######
 # Utils
 ######
+
+
+GET_YAML_VALUE() {
+    cat "${CONFIG}" | yq ".images.${1}.${2}" 
+}
 
 ASSERT_DIR () {
     if [ ! -d "${1}" ]; then

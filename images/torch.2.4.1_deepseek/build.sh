@@ -92,27 +92,22 @@ TORCH_INSTALL_CMD="pip3 install torch torchvision torchaudio --index-url https:/
 TORCH_VERSION=2.6
 TORCH_INSTALL_CMD="pip3 install torch torchvision torchaudio"                # torch 2.6 cuda 12.4
 
-
 TORCH_VERSION=2.6
 TORCH_INSTALL_CMD="pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126"                # torch 2.6 cuda 12.6
-# 2.6.0+cu126 True
 
-TORCH_VERSION=2.4.1 # for DeepSeek V3
-# cuda fails with conda
-# TORCH_INSTALL_CMD="conda install pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia"
-TORCH_INSTALL_CMD="pip install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 triton==3.0.0 transformers==4.46.3 safetensors==0.4.5"
+TORCH_VERSION=2.4 # for DeepSeek V3
+TORCH_INSTALL_CMD="conda install pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia"
 
-TORCH_VERSION=2.5.1 # for Diffusers
+# TORCH_VERSION=2.5.1 # for Diffusers
 # TORCH_INSTALL_CMD="conda install pytorch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 pytorch-cuda=12.4 -c pytorch -c nvidia"
-TORCH_INSTALL_CMD="pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124"
 
-PROJECTNAME="${PWD}${TORCH_VERSION}"
+
+PROJECTNAME="${PWD}"
 
 
 NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $TAG)
-docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER --build-arg userNAME1=z --build-arg TORCH_INSTALL_CMD="${TORCH_INSTALL_CMD}" -t $NAME .
+docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER --build-arg userNAME1=z -t $NAME .
 
 # cleanup temp projects
 for proj in "${PROJECTS[@]}"; do rm -rf "${proj}" ; done
 
-# python -c 'import torch; print(torch.__version__, torch.cuda.is_available())'

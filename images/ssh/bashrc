@@ -118,4 +118,5 @@ fi
 
 alias bedit='nano ~/.bashrc && source ~/.bashrc'
 alias rsy='f(){ rsync -h -v -r -P -t --update "$@";  unset -f f; }; f'
-
+alias lt="ls -lahtr"
+alias mdir='f(){ mkdir -p "${1}" && sudo chown -R $(id -u):docker "$1";  unset -f f; }; f'

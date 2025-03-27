@@ -25,7 +25,8 @@ fi
 echo "Building stack of images based on ${BASEIMAGE} > "
 
 PROJECTNAME=ssh
-cd $PROJECTNAME && ./build.sh -b $BASEIMAGE -r $AUTH_ROOT -m $MAINTAINER -t $DEFAULTTAG -u "${USERGIDS}"
+cd $PROJECTNAME && ./build.sh -b $BASEIMAGE -r $AUTH_ROOT -m $MAINTAINER -t $DEFAULTTAG 
+#-u "${USERGIDS}"
 
 # build on top of previousimage
 BASEIMAGE=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $DEFAULTTAG)
@@ -36,6 +37,9 @@ cd ../$PROJECTNAME && ./build.sh -b $BASEIMAGE -m $MAINTAINER -t $DEFAULTTAG -r 
 # build on top of previousimage
 BASEIMAGE=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $DEFAULTTAG)
 PROJECTNAME=torch
+cd ../$PROJECTNAME && ./build.sh -b $BASEIMAGE -m $MAINTAINER -t $DEFAULTTAG -r $PROJ_ROOT
+
+PROJECTNAME=torch.2.4.1_deepseek
 cd ../$PROJECTNAME && ./build.sh -b $BASEIMAGE -m $MAINTAINER -t $DEFAULTTAG -r $PROJ_ROOT
 
 

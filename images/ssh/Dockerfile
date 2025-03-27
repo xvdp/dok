@@ -69,10 +69,8 @@ ADD --chown=$userNAME2:$userNAME2 bashrc /home/$userNAME2/.bashrc
 ADD --chown=$userNAME3:$userNAME3 bashrc /home/$userNAME3/.bashrc
 
 # TODO
-# users 2 and 3 need to also bring in their authorized keys
+# users 2 and 3 need to also be declared 
 ARG USERNAME=$userNAME1
-# add authorized_keys to user .ssh
-# only allow log in from that user
 USER $USERNAME
 
 RUN mkdir -p /home/$USERNAME/.ssh
@@ -84,3 +82,5 @@ RUN chmod 700 /home/$USERNAME/.ssh
 SHELL ["/bin/bash", "-c"]
 
 # CMD [ "/bin/bash" ]
+# if need to run docker run --rm -it --gpus device=0 xvdp/cuda1241-cudnn-ubuntu2204_ssh -c /bin/bash
+

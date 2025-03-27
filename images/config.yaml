@@ -1,0 +1,48 @@
+build:
+  maintainer: "xvdp"
+  user: 1001
+  username: "z"
+  images:
+    cuda1280-cudnn-ubuntu2404_ssh:
+      name: "ssh"
+      baseimage: "nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04"
+      auth_root: "~/.ssh"
+    cuda1280-cudnn-ubuntu2404_ssh_mamba:
+      name: "mamba"
+      baseimage: "xvdp/cuda1280-cudnn-ubuntu2404_ssh"
+    ubuntu22-04_cuda12-4_torch2-4:
+      os: "ubuntu22.04"
+      cuda: "12.4.1"
+      torch: "2.5.1"
+      base: "nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04"
+      torch_install_cmd: "conda install pytorch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 pytorch-cuda=12.4 -c pytorch -c nvidia"
+    ubuntu22-04_cuda12-4_torch2-4:
+      os: "ubuntu22.04"
+      cuda: "12.4.1"
+      torch: "2.4.1"
+      base: "nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04"
+      torch_install_cmd: "conda install pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia"
+    ubuntu24-04_cuda12-6_torch2-6:
+      os: "ubuntu24.04"
+      cuda: "12.6.3"
+      base: "nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04"
+      torch_install_cmd: "pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126" 
+    ubuntu24-04_cuda12-8_torch2-8:
+      os: "ubuntu24.04"
+      cuda: "12.8.0"
+      base: "nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04"
+      torch_install_cmd: "pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128"
+run:
+  deepseek:
+    image: 'xvdp/cuda1241-cudnn-ubuntu2204_ssh_mamba_torch.2.4.1_deepseek'
+    user: 1001
+    gpus: 1
+    volumes:
+      -v "/home/z/work/gits/Language/DeepSeek:/home/z/DeepSeek"
+      -v "/mnt/Data/DeepSeek-V3:/home/z/DeepSeekData"
+      
+
+
+
+
+  
