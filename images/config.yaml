@@ -33,14 +33,22 @@ build:
       base: "nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04"
       torch_install_cmd: "pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128"
 run:
-  deepseek:
-    image: 'xvdp/cuda1241-cudnn-ubuntu2204_ssh_mamba_torch.2.4.1_deepseek'
-    user: 1001
-    gpus: 1
-    volumes:
-      -v "/home/z/work/gits/Language/DeepSeek:/home/z/DeepSeek"
-      -v "/mnt/Data/DeepSeek-V3:/home/z/DeepSeekData"
-      
+  environments:
+    -e "XDG_CACHE_HOME=/home/weights"
+    -e "TORCH_HOME=/home/weights/torch"
+    -e "TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions"
+    -e "DNNLIB_CACHE_DIR=/home/weights/dnnlib"
+    -e "HUGGINGFACE_HOME=/home/weights/huggingface"
+  images:
+    deepseek:
+      image: 'xvdp/cuda1241-cudnn-ubuntu2204_ssh_mamba_torch241_deepseek'
+      user: 1001
+      gpus: 1
+      volumes:
+        -v "/home/z/work/gits/Language/DeepSeek:/home/z/DeepSeek"
+        -v "/home/weights:/home/z/weights"
+      wipvolumes:
+        -v "/home/z/work/gits/Language/DeepSeek/.python_history:/home/z/.python_history"
 
 
 
