@@ -31,13 +31,15 @@ build_docker_run() {
     local user
     local gpus
     local hf_token
+    local echo_only=false
 
     # Parse options overroding config.yaml
-    while getopts u:g:h: option; do
+    while getopts u:g:h:e option; do
         case ${option} in
             u) user=${OPTARG};;
             g) gpus=${OPTARG};;
             h) hf_token=${OPTARG};;
+            e) echo_only=true;;
             *) echo "Invalid option: -${OPTARG}"; return 1;;
         esac
     done
@@ -115,7 +117,9 @@ build_docker_run() {
     # fi
 
     docker_run_command="$docker_run_command $image"
-    echo "$docker_run_command"
+    if [ ! $echo_only==true ]; then
+        echo "$docker_run_command"
+    fi
     eval "$docker_run_command" 
 }
 

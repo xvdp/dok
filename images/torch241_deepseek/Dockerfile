@@ -35,7 +35,8 @@ RUN chown ${userNAME1}:${userNAME1} /home/${userNAME1} \
 
 # https://github.com/deepseek-ai/DeepSeek-V3?tab=readme-ov-file#6-how-to-run-locally
 RUN pip install --upgrade pip && pip install --no-cache-dir torch==2.4.1 triton==3.0.0 transformers==4.46.3 safetensors==0.4.5 \
-    && mamba install -y ffmpeg plotly h5py jupyter tqdm scikit-learn scikit-image einops matplotlib pybind11 openexr colour-science pyopengl
+    && mamba install -y ffmpeg plotly h5py jupyter tqdm scikit-learn scikit-image einops matplotlib pybind11 openexr colour-science \
+    pyopengl accelerate>=0.26.0
 
 # reopen shell
 SHELL ["/bin/bash", "-c"]
