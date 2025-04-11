@@ -34,6 +34,7 @@ PORT=32778
 MAINTAINER="xvdp"
 TAG="latest"
 DOCKERGID=$( cat /etc/group | grep docker | cut -d: -f 3)
+NOCACHE=""
 
 if [ $# -eq 0 ]
   then
@@ -41,14 +42,15 @@ if [ $# -eq 0 ]
     exit
 fi
 
-while getopts b:n:m:t:p:r: option; do case ${option} in
+while getopts b:n:m:t:p:r:c option; do case ${option} in
 b) BASEIMAGE=${OPTARG};;
 n) NAME=${OPTARG};;
 m) MAINTAINER=${OPTARG};;
 t) TAG=${OPTARG};;
 p) PORT=${OPTARG};;
 r) ROOT=${OPTARG};;       # folder with authorized_keys file
-d) DOCKERGID=${OPTARG};; 
+d) DOCKERGID=${OPTARG};;
+c) NOCACHE="--no-cache"
 esac; done
 
 if [ -z $DOCKERGID ]; then
@@ -87,9 +89,7 @@ echo "MAINTAINER      ${MAINTAINER} "
 echo "TAG             ${TAG} "
 echo "OUT IMAGE:      ${NAME}"
 
-docker build --build-arg baseimage=$BASEIMAGE --build-arg port=$PORT --build-arg maintainer=$MAINTAINER -t $NAME .
-
-# docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
+docker build $NOCACHE --build-arg baseimage=$BASEIMAGE --build-arg port=$PORT --build-arg maintainer=$MAINTAINER --build-arg dockerGID=$DOCKERGID -t $NAME .
 
 rm -rf authorized_keys
 

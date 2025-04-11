@@ -29,13 +29,13 @@ cd $PROJECTNAME && ./build.sh -b $BASEIMAGE -r $AUTH_ROOT -m $MAINTAINER -t $DEF
 #-u "${USERGIDS}"
 
 
-# build on top of previousimage
+# # build on top of previousimage
 BASEIMAGE=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $DEFAULTTAG)
 echo $BASEIMAGE
 PROJECTNAME=mamba
 cd ../$PROJECTNAME && ./build.sh -b $BASEIMAGE -m $MAINTAINER -t $DEFAULTTAG -r $PROJ_ROOT
 
-# build on top of previousimage
+# # build on top of previousimage
 BASEIMAGE=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $DEFAULTTAG)
 
 PROJECTNAME=torch241_deepseek
