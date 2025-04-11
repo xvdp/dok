@@ -18,8 +18,8 @@ BASEIMAGE="nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04"  # for deepseek v3 https:
 
 # LOCAL or SOURCE VOLUMES # used by ./build.sh scripts
 GIT_ROOT=~/work/gits    # folder where gits are cloned to
-WEIGHTS_ROOT=/mnt/Data/weights  # folder where project weights should be stored
-DATA_ROOT=/mnt/Data/data  # folder where project data should be stored
+WEIGHTS_ROOT=/home/weights  # folder where project weights should be stored
+DATA_ROOT=/mnt/Data # folder where project data should be stored
 MAINTAINER=xvdp
 DEFAULTUSER="1001"  # ssh precursor creates 1001, 1002, 1003
 DEFAULTTAG=latest

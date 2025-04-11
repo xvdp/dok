@@ -39,16 +39,19 @@ run:
     -e "TORCH_EXTENSIONS_DIR=/home/weights/torch_extensions"
     -e "DNNLIB_CACHE_DIR=/home/weights/dnnlib"
     -e "HUGGINGFACE_HOME=/home/weights/huggingface"
+    -e "HF_TOKEN"=$(cat /home/weights/huggingface/HF_TOKEN)
+    -e "PROJECT=/home/DeepSeek/DeepSeek-V3"
+    -e "DATA=/home/weights/DeepSeek-V3"
   images:
     deepseek:
       image: 'xvdp/cuda1241-cudnn-ubuntu2204_ssh_mamba_torch241_deepseek'
       user: 1001
       gpus: 1
       volumes:
-        -v "/home/z/work/gits/Language/DeepSeek:/home/z/DeepSeek"
-        -v "/home/weights:/home/z/weights"
+        -v "/home/z/work24/gits/Language/DeepSeek:/home/DeepSeek"
+        -v "/home/weights:/home/weights"
       wipvolumes:
-        -v "/home/z/work/gits/Language/DeepSeek/.python_history:/home/z/.python_history"
+        -v "/home/z/work24/gits/Language/DeepSeek/.python_history:/home/z/.python_history"
 
 
 

@@ -106,7 +106,7 @@ TORCH_VERSION=2.5.1 # for Diffusers
 # TORCH_INSTALL_CMD="conda install pytorch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 pytorch-cuda=12.4 -c pytorch -c nvidia"
 TORCH_INSTALL_CMD="pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124"
 
-PROJECTNAME="${PWD}${TORCH_VERSION}"
+PROJECTNAME="${PWD}${TORCH_VERSION//./$''}""
 
 
 NAME=$(MAKE_IMAGE_NAME $BASEIMAGE $MAINTAINER $PROJECTNAME $TAG)

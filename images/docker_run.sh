@@ -30,12 +30,14 @@ get_yaml_value() {
 build_docker_run() {
     local user
     local gpus
+    local hf_token
 
     # Parse options overroding config.yaml
-    while getopts u:g: option; do
+    while getopts u:g:h: option; do
         case ${option} in
             u) user=${OPTARG};;
             g) gpus=${OPTARG};;
+            h) hf_token=${OPTARG};;
             *) echo "Invalid option: -${OPTARG}"; return 1;;
         esac
     done
@@ -68,6 +70,8 @@ build_docker_run() {
     # required
     local image=$(get_yaml_value "$config_file" run images "$image_name" image)
 
+
+    # user, gpus, huggingfacetoken can be overwritten by passing -u and -g and -h
     if [ -z $user ]; then 
         user=$(get_yaml_value "$config_file" run images "$image_name" user)
     fi
@@ -100,9 +104,15 @@ build_docker_run() {
     if [[ -n "$volumes" ]]; then
         docker_run_command="$docker_run_command $volumes"
     fi
+    # set environment variablariables
     if [[ -n "$environments" ]]; then
         docker_run_command="$docker_run_command $environments"
     fi
+    ## set huggingface token
+    ## uncomment if token not saved in ${HUGGINGFACE_HOME}/HF_TOKEN 
+    # if [[ -n "$hf_token" ]]; then
+    #     docker_run_command="$docker_run_command -e HF_TOKEN=$hf_token"
+    # fi
 
     docker_run_command="$docker_run_command $image"
     echo "$docker_run_command"

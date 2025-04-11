@@ -87,7 +87,7 @@ echo "MAINTAINER      ${MAINTAINER} "
 echo "TAG             ${TAG} "
 echo "OUT IMAGE:      ${NAME}"
 
-docker build --build-arg baseimage=$BASEIMAGE --build-arg port=$PORT --build-arg maintainer=$MAINTAINER --build-arg dockerGID=$DOCKERGID -t $NAME .
+docker build --build-arg baseimage=$BASEIMAGE --build-arg port=$PORT --build-arg maintainer=$MAINTAINER -t $NAME .
 
 # docker build --build-arg baseimage=$BASEIMAGE --build-arg maintainer=$MAINTAINER -t $NAME .
 

@@ -9,13 +9,10 @@ ARG dockerGID=999
 # USERS: build will fail if these conflcit with
 # getent group | cut -d: -f 3 
 # since ubuntu 24.04 ubuntu docker image sets usergroupid 1000
-ARG userGID1=1001
-ARG userGID2=1002
-ARG userGID3=1003
-ARG userNAME1=z
-ARG userNAME2=harveer
-ARG userNAME3=srinivasa
-
+ARG userID1=1001
+ARG userID2=1002
+ARG userN1=z
+ARG userN2=harveer
 
 LABEL MAINTAINER $maintainer
 
@@ -24,8 +21,6 @@ RUN echo ${baseimage}
 # TODO: possible confusion, clarify sshd_config vs ufw 
 # replace Port 22 -> 32778 in shd_config : to run with network=host
 RUN apt-get update && apt-get install -y openssh-server
-
-
 
 
 RUN mkdir /var/run/sshd
@@ -39,43 +34,36 @@ CMD ["sudo","/usr/sbin/sshd", "-D"]
 # if shared folders with rwx on group docker are accessible to all
 # alt, can add to groups on docker run ... --group-add $(getent group docker | cut -d: -f3)
 RUN groupadd docker -g $dockerGID \
-&& groupadd $userNAME1 -g $userGID1 && useradd -u $userGID1 $userNAME1 -g $userNAME1 && usermod -G $dockerGID $userNAME1 \
-&& groupadd $userNAME2 -g $userGID2 && useradd -u $userGID2 $userNAME2 -g $userNAME2 && usermod -G $dockerGID $userNAME2 \
-&& groupadd $userNAME3 -g $userGID3 && useradd -u $userGID3 $userNAME3 -g $userNAME3 && usermod -G $dockerGID $userNAME3
-RUN mkdir -p /home/$userNAME1/.vscode-server /home/$userNAME1/.vscode-server-insiders \
-&& chown $userNAME1:$userNAME1 /home/$userNAME1 \
-&& chown $userNAME1:$userNAME1 /home/$userNAME1/.vscode-server* \
-&& mkdir -p /home/$userNAME2/.vscode-server /home/$userNAME2/.vscode-server-insiders \
-&& chown $userNAME2:$userNAME2 /home/$userNAME2 \
-&& chown $userNAME2:$userNAME2 /home/$userNAME2/.vscode-server* \
-&& mkdir -p /home/$userNAME3/.vscode-server /home/$userNAME3/.vscode-server-insiders \
-&& chown $userNAME3:$userNAME3 /home/$userNAME3 \
-&& chown $userNAME3:$userNAME3 /home/$userNAME3/.vscode-server* 
+&& groupadd $userN1 -g $userID1 && useradd -u $userID1 $userN1 -g $userN1 && usermod -G $dockerGID $userN1 \
+&& groupadd $userN2 -g $userID2 && useradd -u $userID2 $userN2 -g $userN2 && usermod -G $dockerGID $userN2
+
+
+RUN mkdir -p /home/$userN1/.vscode-server /home/$userN1/.vscode-server-insiders /home/$userN1/.ssh \
+&& chown -R $userID1:$userID1 /home/$userN1 \
+&& mkdir -p /home/$userN2/.vscode-server /home/$userN2/.vscode-server-insiders /home/$userN2/.ssh \
+&& chown -R $userID2:$userID2 /home/$userN2
+
+
 RUN apt-get update \
 && apt-get install -y sudo \
-&& echo $userNAME1 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$userNAME1 \
-&& chmod 0440 /etc/sudoers.d/$userNAME1 \
-&& echo $userNAME2 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$userNAME2 \
-&& chmod 0440 /etc/sudoers.d/$userNAME2 \
-&& echo $userNAME3 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$userNAME3 \
-&& chmod 0440 /etc/sudoers.d/$userNAME3 \
-&& usermod -s /bin/bash $userNAME1 \
-&& usermod -s /bin/bash $userNAME2 \
-&& usermod -s /bin/bash $userNAME3
+&& echo $userN1 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$userN1 \
+&& chmod 0440 /etc/sudoers.d/$userN1 \
+&& echo $userN2 ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$userN2 \
+&& chmod 0440 /etc/sudoers.d/$userN2 \
+&& usermod -s /bin/bash $userN1 \
+&& usermod -s /bin/bash $userN2
 
 # bashrc needs could be different for all 3
-ADD --chown=$userNAME1:$userNAME1 bashrc /home/$userNAME1/.bashrc
-ADD --chown=$userNAME2:$userNAME2 bashrc /home/$userNAME2/.bashrc
-ADD --chown=$userNAME3:$userNAME3 bashrc /home/$userNAME3/.bashrc
+ADD --chown=$userID1:$userID1 bashrc /home/$userN1/.bashrc
+ADD --chown=$userID2:$userID2 bashrc /home/$userN2/.bashrc
+
 
 # TODO
 # users 2 and 3 need to also be declared 
-ARG USERNAME=$userNAME1
+ARG USERNAME=$userN1
 USER $USERNAME
-
-RUN mkdir -p /home/$USERNAME/.ssh
 WORKDIR /home/$USERNAME
-ADD --chown=$userNAME1:$userNAME1 authorized_keys /home/$USERNAME/.ssh
+ADD --chown=$userID1:$dockerGID authorized_keys /home/$USERNAME/.ssh
 
 RUN chmod 600 /home/$USERNAME/.ssh/authorized_keys
 RUN chmod 700 /home/$USERNAME/.ssh
