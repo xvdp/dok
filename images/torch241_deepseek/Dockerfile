@@ -34,9 +34,19 @@ RUN chown ${userNAME1}:${userNAME1} /home/${userNAME1} \
     && source activate && mamba init
 
 # https://github.com/deepseek-ai/DeepSeek-V3?tab=readme-ov-file#6-how-to-run-locally
-RUN pip install --upgrade pip && pip install --no-cache-dir torch==2.4.1 triton==3.0.0 transformers==4.46.3 safetensors==0.4.5 \
-    && mamba install -y ffmpeg plotly h5py jupyter tqdm scikit-learn scikit-image einops matplotlib pybind11 openexr colour-science \
-    pyopengl accelerate
+# cuda is not available m
+# RUN pip install --upgrade pip && pip install --no-cache-dir torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 --index-url https://download.pytorch.org/whl \
+#     && pip install --no-cache-dir triton==3.0.0 transformers==4.46.3 safetensors==0.4.5 accelerate \
+#     && mamba install -y ffmpeg h5py jupyter tqdm scikit-learn scikit-image einops matplotlib pybind11
+
+RUN mamba run -n base mamba install -y pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia \
+    && mamba install jupyter tqdm matplotlib h5py \
+    && pip install --upgrade pip && pip install --no-cache-dir triton==3.0.0 transformers==4.46.3 safetensors==0.4.5 accelerate
+# RUN mamba install -y pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia 
+#\
+    # && mamba install ffmpeg h5py jupyter tqdm scikit-learn scikit-image einops matplotlib pybind11 \
+    # && pip install --upgrade pip && pip install --no-cache-dir triton==3.0.0 transformers==4.46.3 safetensors==0.4.5 accelerate
+
 
 # reopen shell
 SHELL ["/bin/bash", "-c"]
